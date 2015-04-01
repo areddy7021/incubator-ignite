@@ -18,6 +18,7 @@
 package org.apache.ignite.p2p;
 
 import org.apache.ignite.*;
+import org.apache.ignite.cache.*;
 import org.apache.ignite.cluster.*;
 import org.apache.ignite.compute.*;
 import org.apache.ignite.internal.util.lang.*;
@@ -111,6 +112,11 @@ public class GridP2PClassLoadingSelfTest extends GridCommonAbstractTest {
 
         /** {@inheritDoc} */
         @Nullable @Override public ClusterMetrics metrics() {
+            return null;
+        }
+
+        /** {@inheritDoc} */
+        @Nullable @Override public Map<Integer, CacheMetrics> cacheMetrics() {
             return null;
         }
 

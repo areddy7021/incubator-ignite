@@ -39,6 +39,11 @@ class CacheMetricsMXBeanImpl implements CacheMetricsMXBean {
     }
 
     /** {@inheritDoc} */
+    @Override public int id() {
+        return cache.context().cacheId();
+    }
+
+    /** {@inheritDoc} */
     @Override public String name() {
         return cache.metrics0().name();
     }

@@ -147,6 +147,13 @@ public interface CacheMetrics {
     public String name();
 
     /**
+     * Gets ID of this cache.
+     *
+     * @return Cache ID.
+     */
+    public int id();
+
+    /**
      * Gets number of entries that was swapped to disk.
      *
      * @return Number of entries that was swapped to disk.

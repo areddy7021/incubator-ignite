@@ -17,6 +17,7 @@
 
 package org.apache.ignite.spi.discovery.tcp.internal;
 
+import org.apache.ignite.cache.*;
 import org.apache.ignite.cluster.*;
 import org.apache.ignite.internal.*;
 import org.apache.ignite.internal.util.lang.*;
@@ -72,6 +73,10 @@ public class TcpDiscoveryNode extends GridMetadataAwareAdapter implements Cluste
     /** Node metrics. */
     @GridToStringExclude
     private volatile ClusterMetrics metrics;
+
+    /** Node cache metrics. */
+    @GridToStringExclude
+    private volatile Map<Integer, CacheMetrics> cacheMetrics;
 
     /** Node order in the topology. */
     private volatile long order;
@@ -207,6 +212,25 @@ public class TcpDiscoveryNode extends GridMetadataAwareAdapter implements Cluste
         assert metrics != null;
 
         this.metrics = metrics;
+    }
+
+    /** {@inheritDoc} */
+    @Override public Map<Integer, CacheMetrics> cacheMetrics() {
+        if (metricsProvider != null)
+            cacheMetrics = metricsProvider.cacheMetrics();
+
+        return cacheMetrics;
+    }
+
+    /**
+     * Sets node cache metrics.
+     *
+     * @param cacheMetrics Cache metrics.
+     */
+    public void setCacheMetrics(Map<Integer, CacheMetrics> cacheMetrics) {
+        assert cacheMetrics != null;
+
+        this.cacheMetrics = cacheMetrics;
     }
 
     /**

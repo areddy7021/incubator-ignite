@@ -18,6 +18,7 @@
 package org.apache.ignite.spi.discovery.tcp;
 
 import org.apache.ignite.*;
+import org.apache.ignite.cache.*;
 import org.apache.ignite.cluster.*;
 import org.apache.ignite.events.*;
 import org.apache.ignite.internal.*;
@@ -1067,7 +1068,11 @@ public class TcpClientDiscoverySpi extends TcpDiscoverySpiAdapter implements Tcp
                     Socket sock0 = sock;
 
                     if (sock0 != null) {
-                        msg.setMetrics(getLocalNodeId(), metricsProvider.metrics());
+                        UUID nodeId = ignite.configuration().getNodeId();
+
+                        msg.setMetrics(nodeId, metricsProvider.metrics());
+
+                        msg.setCacheMetrics(nodeId, metricsProvider.cacheMetrics());
 
                         try {
                             writeToSocket(sock0, msg);
@@ -1094,9 +1099,9 @@ public class TcpClientDiscoverySpi extends TcpDiscoverySpiAdapter implements Tcp
                     log.debug("Received heartbeat response: " + msg);
             }
             else {
-                if (msg.hasMetrics()) {
-                    long tstamp = U.currentTimeMillis();
+                long tstamp = U.currentTimeMillis();
 
+                if (msg.hasMetrics()) {
                     for (Map.Entry<UUID, MetricsSet> e : msg.metrics().entrySet()) {
                         MetricsSet metricsSet = e.getValue();
 
@@ -1105,6 +1110,11 @@ public class TcpClientDiscoverySpi extends TcpDiscoverySpiAdapter implements Tcp
                         for (T2<UUID, ClusterMetrics> t : metricsSet.clientMetrics())
                             updateMetrics(t.get1(), t.get2(), tstamp);
                     }
+                }
+
+                if (msg.hasCacheMetrics()) {
+                    for (Map.Entry<UUID, Map<Integer, CacheMetrics>> e : msg.cacheMetrics().entrySet())
+                        updateCacheMetrics(e.getKey(), e.getValue(), tstamp);
                 }
             }
         }
@@ -1168,6 +1178,28 @@ public class TcpClientDiscoverySpi extends TcpDiscoverySpiAdapter implements Tcp
             }
             else if (log.isDebugEnabled())
                 log.debug("Received metrics from unknown node: " + nodeId);
+        }
+
+        /**
+         * @param nodeId Node ID.
+         * @param cacheMetrics Cache metrics.
+         * @param tstamp Timestamp.
+         */
+        private void updateCacheMetrics(UUID nodeId, Map<Integer, CacheMetrics> cacheMetrics, long tstamp) {
+            assert nodeId != null;
+            assert cacheMetrics != null;
+
+            TcpDiscoveryNode node = nodeId.equals(ignite.configuration().getNodeId()) ? locNode : rmtNodes.get(nodeId);
+
+            if (node != null && node.visible()) {
+                node.setCacheMetrics(cacheMetrics);
+
+                node.lastUpdateTime(tstamp);
+
+                notifyDiscovery(EVT_NODE_METRICS_UPDATED, topVer, node, allNodes());
+            }
+            else if (log.isDebugEnabled())
+                log.debug("Received cacheMetrics from unknown node: " + nodeId);
         }
 
         /**

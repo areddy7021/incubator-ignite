@@ -18,6 +18,7 @@
 package org.apache.ignite.cluster;
 
 import org.apache.ignite.*;
+import org.apache.ignite.cache.*;
 import org.apache.ignite.lang.*;
 import org.jetbrains.annotations.*;
 
@@ -146,6 +147,18 @@ public interface ClusterNode {
      * @return Runtime metrics snapshot for this node.
      */
     public ClusterMetrics metrics();
+
+    /**
+     * Gets collections of cache metrics for this node. Note that node cache metrics are constantly updated
+     * and provide up to date information about caches.
+     * <p>
+     * Cache metrics are updated with some delay which is directly related to heartbeat
+     * frequency. For example, when used with default
+     * {@link org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi} the update will happen every {@code 2} seconds.
+     *
+     * @return Runtime metrics snapshots for this node.
+     */
+    public Map<Integer, CacheMetrics> cacheMetrics();
 
     /**
      * Gets all node attributes. Attributes are assigned to nodes at startup
