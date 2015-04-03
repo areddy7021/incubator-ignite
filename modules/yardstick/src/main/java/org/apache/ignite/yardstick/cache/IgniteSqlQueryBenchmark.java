@@ -54,7 +54,7 @@ public class IgniteSqlQueryBenchmark extends IgniteCacheAbstractBenchmark {
 
     /** {@inheritDoc} */
     @Override public boolean test(Map<Object, Object> ctx) throws Exception {
-        double salary = ThreadLocalRandom.current().nextDouble() * args.range() * 1000;
+        double salary = ThreadLocalRandom.current().nextGaussian() * args.range() * 1000;
 
         double maxSalary = salary + 1000;
 

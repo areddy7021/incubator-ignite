@@ -40,7 +40,7 @@ public class IgniteSqlQueryPutBenchmark extends IgniteCacheAbstractBenchmark {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
         if (rnd.nextBoolean()) {
-            double salary = rnd.nextDouble() * args.range() * 1000;
+            double salary = rnd.nextGaussian() * args.range() * 1000;
 
             double maxSalary = salary + 1000;
 
