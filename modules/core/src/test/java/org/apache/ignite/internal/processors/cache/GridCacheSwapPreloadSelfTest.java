@@ -27,6 +27,7 @@ import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.*;
 import org.apache.ignite.testframework.junits.common.*;
 import org.jetbrains.annotations.*;
 
+import javax.cache.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
@@ -34,13 +35,14 @@ import java.util.concurrent.atomic.*;
 import static org.apache.ignite.cache.CacheAtomicityMode.*;
 import static org.apache.ignite.cache.CacheMode.*;
 import static org.apache.ignite.cache.CacheRebalanceMode.*;
+import static org.apache.ignite.cache.CacheWriteSynchronizationMode.*;
 
 /**
  * Test for cache swap preloading.
  */
 public class GridCacheSwapPreloadSelfTest extends GridCommonAbstractTest {
     /** Entry count. */
-    private static final int ENTRY_CNT = 15000;
+    private static final int ENTRY_CNT = 15_000;
 
     /** */
     private final TcpDiscoveryIpFinder ipFinder = new TcpDiscoveryVmIpFinder(true);
@@ -62,7 +64,7 @@ public class GridCacheSwapPreloadSelfTest extends GridCommonAbstractTest {
 
         CacheConfiguration cacheCfg = defaultCacheConfiguration();
 
-        cacheCfg.setWriteSynchronizationMode(CacheWriteSynchronizationMode.FULL_SYNC);
+        cacheCfg.setWriteSynchronizationMode(FULL_SYNC);
         cacheCfg.setSwapEnabled(true);
         cacheCfg.setCacheMode(cacheMode);
         cacheCfg.setRebalanceMode(SYNC);
@@ -134,12 +136,9 @@ public class GridCacheSwapPreloadSelfTest extends GridCommonAbstractTest {
     }
 
     /**
-     * TODO: GG-4804 Swap preloading test failed with NotNull assertion, TODO: GG-4804 while key should have been found
-     * either in swap or in cache
-     *
      * @throws Exception If failed.
      */
-    public void _testSwapReplicatedMultithreaded() throws Exception {
+    public void testSwapReplicatedMultithreaded() throws Exception {
         cacheMode = REPLICATED;
 
         checkSwapMultithreaded();
@@ -160,7 +159,7 @@ public class GridCacheSwapPreloadSelfTest extends GridCommonAbstractTest {
         try {
             startGrid(0);
 
-            final GridCache<Integer, Integer> cache = ((IgniteKernal)grid(0)).getCache(null);
+            final IgniteCache<Integer, Integer> cache = grid(0).cache(null);
 
             assertNotNull(cache);
 
@@ -168,7 +167,12 @@ public class GridCacheSwapPreloadSelfTest extends GridCommonAbstractTest {
             for (int i = 0; i < ENTRY_CNT; i++)
                 cache.put(i, i);
 
-            cache.evictAll();
+            Set<Integer> keys = new HashSet<>();
+
+            for (Cache.Entry<Integer, Integer> entry : cache.localEntries())
+                keys.add(entry.getKey());
+
+            cache.localEvict(keys);
 
             fut = multithreadedAsync(new Callable<Object>() {
                 @Nullable @Override public Object call() throws Exception {
@@ -182,9 +186,7 @@ public class GridCacheSwapPreloadSelfTest extends GridCommonAbstractTest {
                         assertNotNull(i);
                         assertEquals(Integer.valueOf(key), i);
 
-                        boolean b = cache.evict(rnd.nextInt(ENTRY_CNT));
-
-                        assert b;
+                        cache.localEvict(Collections.singleton(rnd.nextInt(ENTRY_CNT)));
                     }
 
                     return null;
@@ -195,7 +197,11 @@ public class GridCacheSwapPreloadSelfTest extends GridCommonAbstractTest {
 
             done.set(true);
 
-            int size = grid(1).cache(null).localSize();
+            fut.get();
+
+            fut = null;
+
+            int size = grid(1).cache(null).localSize(CachePeekMode.ONHEAP);
 
             info("New node cache size: " + size);
 

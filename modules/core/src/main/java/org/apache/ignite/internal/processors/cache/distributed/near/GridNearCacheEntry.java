@@ -58,7 +58,6 @@ public class GridNearCacheEntry extends GridDistributedCacheEntry {
      * @param hash Key hash value.
      * @param val Entry value.
      * @param next Next entry in the linked list.
-     * @param ttl Time to live.
      * @param hdrId Header id.
      */
     public GridNearCacheEntry(GridCacheContext ctx,
@@ -66,10 +65,9 @@ public class GridNearCacheEntry extends GridDistributedCacheEntry {
         int hash,
         CacheObject val,
         GridCacheMapEntry next,
-        long ttl,
         int hdrId)
     {
-        super(ctx, key, hash, val, next, ttl, hdrId);
+        super(ctx, key, hash, val, next, hdrId);
 
         part = ctx.affinity().partition(key);
     }
@@ -170,7 +168,7 @@ public class GridNearCacheEntry extends GridDistributedCacheEntry {
                                     }
                                 }
 
-                                recordNodeId(cctx.affinity().primary(key, topVer).id());
+                                recordNodeId(cctx.affinity().primary(key, topVer).id(), topVer);
 
                                 dhtVer = e.isNew() || e.isDeleted() ? null : e.version();
 
@@ -206,7 +204,8 @@ public class GridNearCacheEntry extends GridDistributedCacheEntry {
     public boolean resetFromPrimary(CacheObject val,
         GridCacheVersion ver,
         GridCacheVersion dhtVer,
-        UUID primaryNodeId)
+        UUID primaryNodeId,
+        AffinityTopologyVersion topVer)
         throws GridCacheEntryRemovedException, IgniteCheckedException
     {
         assert dhtVer != null;
@@ -216,7 +215,7 @@ public class GridNearCacheEntry extends GridDistributedCacheEntry {
         synchronized (this) {
             checkObsolete();
 
-            primaryNode(primaryNodeId);
+            primaryNode(primaryNodeId, topVer);
 
             if (!F.eq(this.dhtVer, dhtVer)) {
                 value(val);
@@ -244,7 +243,8 @@ public class GridNearCacheEntry extends GridDistributedCacheEntry {
         @Nullable CacheObject val,
         long expireTime,
         long ttl,
-        UUID primaryNodeId)
+        UUID primaryNodeId,
+        AffinityTopologyVersion topVer)
     {
         assert dhtVer != null;
 
@@ -264,7 +264,7 @@ public class GridNearCacheEntry extends GridDistributedCacheEntry {
 
                         ttlAndExpireTimeExtras((int) ttl, expireTime);
 
-                        primaryNode(primaryNodeId);
+                        primaryNode(primaryNodeId, topVer);
                     }
                 }
             }
@@ -299,10 +299,10 @@ public class GridNearCacheEntry extends GridDistributedCacheEntry {
     }
 
     /** {@inheritDoc} */
-    @Override protected void recordNodeId(UUID primaryNodeId) {
+    @Override protected void recordNodeId(UUID primaryNodeId, AffinityTopologyVersion topVer) {
         assert Thread.holdsLock(this);
 
-        primaryNode(primaryNodeId);
+        primaryNode(primaryNodeId, topVer);
     }
 
     /**
@@ -376,7 +376,7 @@ public class GridNearCacheEntry extends GridDistributedCacheEntry {
                 boolean hasVal = hasValueUnlocked();
 
                 if (isNew() || !valid || expVer == null || expVer.equals(this.dhtVer)) {
-                    primaryNode(primaryNodeId);
+                    primaryNode(primaryNodeId, topVer);
 
                     // Change entry only if dht version has changed.
                     if (!dhtVer.equals(dhtVersion())) {
@@ -621,11 +621,9 @@ public class GridNearCacheEntry extends GridDistributedCacheEntry {
     /**
      * @param nodeId Primary node ID.
      */
-    private void primaryNode(UUID nodeId) {
+    private void primaryNode(UUID nodeId, AffinityTopologyVersion topVer) {
         assert Thread.holdsLock(this);
         assert nodeId != null;
-
-        AffinityTopologyVersion topVer = cctx.discovery().topologyVersionEx();
 
         ClusterNode primary = cctx.affinity().primary(part, topVer);
 

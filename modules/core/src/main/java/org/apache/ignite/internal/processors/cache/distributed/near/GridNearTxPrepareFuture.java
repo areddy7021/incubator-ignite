@@ -175,7 +175,7 @@ public final class GridNearTxPrepareFuture<K, V> extends GridCompoundIdentityFut
                 MiniFuture f = (MiniFuture)fut;
 
                 if (f.node().id().equals(nodeId)) {
-                    f.onResult(new ClusterTopologyCheckedException("Remote node left grid (will retry): " + nodeId));
+                    f.onResult(new ClusterTopologyCheckedException("Remote node left grid: " + nodeId));
 
                     found = true;
                 }
@@ -933,7 +933,7 @@ public final class GridNearTxPrepareFuture<K, V> extends GridCompoundIdentityFut
                                     CacheVersionedValue tup = entry.getValue();
 
                                     nearEntry.resetFromPrimary(tup.value(), tx.xidVersion(),
-                                        tup.version(), m.node().id());
+                                        tup.version(), m.node().id(), tx.topologyVersion());
                                 }
                                 else if (txEntry.cached().detached()) {
                                     GridDhtDetachedCacheEntry detachedEntry = (GridDhtDetachedCacheEntry)txEntry.cached();
