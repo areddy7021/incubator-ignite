@@ -1184,14 +1184,12 @@ public interface CacheProjection<K, V> extends Iterable<Cache.Entry<K, V>> {
      * if there is one.
      *
      * @param key Key whose mapping is to be removed from cache.
-     * @param filter Optional filter to check prior to removing value form cache. Note
-     *      that filter is checked atomically together with remove operation.
      * @return Previous value associated with specified key, or {@code null}
      *      if there was no value for this key.
      * @throws NullPointerException If key is {@code null}.
      * @throws IgniteCheckedException If remove operation failed.
      */
-    @Nullable public V remove(K key, @Nullable CacheEntryPredicate... filter)
+    @Nullable public V remove(K key)
         throws IgniteCheckedException;
 
     /**
@@ -1233,8 +1231,6 @@ public interface CacheProjection<K, V> extends Iterable<Cache.Entry<K, V>> {
      * if there is one.
      *
      * @param key Key whose mapping is to be removed from cache.
-     * @param filter Optional filter to check prior to removing value form cache. Note
-     *      that filter is checked atomically together with remove operation.
      * @return {@code True} if filter passed validation and entry was removed, {@code false} otherwise.
      *      Note that if filter is not specified, this method will return {@code true}.
      * @throws NullPointerException if the key is {@code null}.

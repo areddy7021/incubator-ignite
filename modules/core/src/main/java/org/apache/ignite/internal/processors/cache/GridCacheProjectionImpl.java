@@ -667,9 +667,8 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     }
 
     /** {@inheritDoc} */
-    @Override public V remove(K key,
-        @Nullable CacheEntryPredicate[] filter) throws IgniteCheckedException {
-        return removeAsync(key, filter).get();
+    @Override public V remove(K key) throws IgniteCheckedException {
+        return removeAsync(key, (CacheEntryPredicate[])null).get();
     }
 
     /** {@inheritDoc} */

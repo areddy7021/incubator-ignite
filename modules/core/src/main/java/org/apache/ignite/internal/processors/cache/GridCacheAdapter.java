@@ -2753,9 +2753,9 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     }
 
     /** {@inheritDoc} */
-    @Nullable @Override public V remove(K key, CacheEntryPredicate[] filter)
+    @Nullable @Override public V remove(K key)
         throws IgniteCheckedException {
-        return remove(key, null, filter);
+        return remove(key, null, null);
     }
 
     /** {@inheritDoc} */
