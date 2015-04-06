@@ -381,9 +381,8 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     }
 
     /** {@inheritDoc} */
-    @Override public boolean putx(K key, V val,
-        @Nullable CacheEntryPredicate[] filter) throws IgniteCheckedException {
-        return putxAsync(key, val, filter).get();
+    @Override public boolean putx(K key, V val) throws IgniteCheckedException {
+        return putxAsync(key, val, null).get();
     }
 
     /** {@inheritDoc} */

@@ -2113,7 +2113,38 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     }
 
     /** {@inheritDoc} */
-    @Override public boolean putx(final K key, final V val,
+    @Override public boolean putx(K key,
+                                  V val) throws IgniteCheckedException {
+        return putx(key, val, null);
+    }
+
+    /**
+     * Stores given key-value pair in cache. If filters are provided, then entries will
+     * be stored in cache only if they pass the filter. Note that filter check is atomic,
+     * so value stored in cache is guaranteed to be consistent with the filters.
+     * <p>
+     * This method will return {@code true} if value is stored in cache and {@code false} otherwise.
+     * Unlike <code>#put(Object, Object, org.apache.ignite.lang.IgnitePredicate[])</code> method, it does not return previous
+     * value and, therefore, does not have any overhead associated with returning a value. It
+     * should be used whenever return value is not required.
+     * <p>
+     * If write-through is enabled, the stored value will be persisted to {@link org.apache.ignite.cache.store.CacheStore}
+     * via <code>CacheStore#put(Transaction, Object, Object)</code> method.
+     * <h2 class="header">Transactions</h2>
+     * This method is transactional and will enlist the entry into ongoing transaction
+     * if there is one.
+     *
+     * @param key Key to store in cache.
+     * @param val Value to be associated with the given key.
+     * @param filter Optional filter to check prior to putting value in cache. Note
+     *      that filter check is atomic with put operation.
+     * @return {@code True} if optional filter passed and value was stored in cache,
+     *      {@code false} otherwise. Note that this method will return {@code true} if filter is not
+     *      specified.
+     * @throws NullPointerException If either key or value are {@code null}.
+     * @throws IgniteCheckedException If put operation failed.
+     */
+    public boolean putx(final K key, final V val,
         final CacheEntryPredicate[] filter) throws IgniteCheckedException {
         boolean statsEnabled = ctx.config().isStatisticsEnabled();
 

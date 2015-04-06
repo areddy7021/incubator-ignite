@@ -518,15 +518,13 @@ public interface CacheProjection<K, V> extends Iterable<Cache.Entry<K, V>> {
      *
      * @param key Key to store in cache.
      * @param val Value to be associated with the given key.
-     * @param filter Optional filter to check prior to putting value in cache. Note
-     *      that filter check is atomic with put operation.
      * @return {@code True} if optional filter passed and value was stored in cache,
      *      {@code false} otherwise. Note that this method will return {@code true} if filter is not
      *      specified.
      * @throws NullPointerException If either key or value are {@code null}.
      * @throws IgniteCheckedException If put operation failed.
      */
-    public boolean putx(K key, V val, @Nullable CacheEntryPredicate... filter)
+    public boolean putx(K key, V val)
         throws IgniteCheckedException;
 
     /**
