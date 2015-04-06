@@ -98,6 +98,8 @@ public abstract class GridCacheAbstractRemoveFailureTest extends GridCacheAbstra
     /** {@inheritDoc} */
     @Override protected void afterTest() throws Exception {
         stopAllGrids();
+
+        TestDebugLog.clear();
     }
 
     /** {@inheritDoc} */
@@ -133,11 +135,15 @@ public abstract class GridCacheAbstractRemoveFailureTest extends GridCacheAbstra
                         while (true) {
                             try {
                                 if (put) {
+                                    TestDebugLog.addEntryMessage(key, i, "put");
+
                                     sndCache0.put(key, i);
 
                                     expVals.put(key, F.t(i));
                                 }
                                 else {
+                                    TestDebugLog.addEntryMessage(key, null, "remove");
+
                                     sndCache0.remove(key);
 
                                     expVals.put(key, F.<Integer>t(null));
@@ -291,6 +297,8 @@ public abstract class GridCacheAbstractRemoveFailureTest extends GridCacheAbstra
             IgniteCache<Integer, Integer> cache = ignite.cache(null);
 
             for (Map.Entry<Integer, GridTuple<Integer>> expVal : expVals.entrySet()) {
+                TestDebugLog.addEntryMessage(expVal.getKey(), null, "get from " + i);
+
                 Integer val = cache.get(expVal.getKey());
 
                 if (!F.eq(expVal.getValue().get(), val)) {

@@ -1696,6 +1696,8 @@ public class GridDhtAtomicCache<K, V> extends GridDhtCacheAdapter<K, V> {
                     filteredReaders = F.view(entry.readers(), F.notEqualTo(node.id()));
                 }
 
+                TestDebugLog.addEntryMessage(CU.value(entry.key(), ctx, false), CU.value((CacheObject)writeVal, ctx, false), "update single");
+
                 GridCacheUpdateAtomicResult updRes = entry.innerUpdate(
                     ver,
                     node.id(),
@@ -1963,6 +1965,8 @@ public class GridDhtAtomicCache<K, V> extends GridDhtCacheAdapter<K, V> {
                         readers = entry.readers();
                         filteredReaders = F.view(entry.readers(), F.notEqualTo(node.id()));
                     }
+
+                    TestDebugLog.addEntryMessage(CU.value(entry.key(), ctx, false), CU.value(writeVal, ctx, false), "update partial");
 
                     GridCacheUpdateAtomicResult updRes = entry.innerUpdate(
                         ver,
@@ -2467,6 +2471,8 @@ public class GridDhtAtomicCache<K, V> extends GridDhtCacheAdapter<K, V> {
 
                         long ttl = req.ttl(i);
                         long expireTime = req.conflictExpireTime(i);
+
+                        TestDebugLog.addEntryMessage(CU.value(key, ctx, false), CU.value(val, ctx, false), "backup update");
 
                         GridCacheUpdateAtomicResult updRes = entry.innerUpdate(
                             ver,

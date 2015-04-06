@@ -169,6 +169,8 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
         ver = cctx.versions().next();
 
         startVer = ver.order();
+
+        TestDebugLog.addEntryMessage(keyValue(false), getClass().getSimpleName(), "created");
     }
 
     /** {@inheritDoc} */
@@ -183,6 +185,8 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
      */
     protected void value(@Nullable CacheObject val) {
         assert Thread.holdsLock(this);
+
+        TestDebugLog.addEntryMessage(keyValue(false), CU.value(val, cctx, false), "set value");
 
         // In case we deal with IGFS cache, count updated data
         if (cctx.cache().isIgfsDataCache() &&
@@ -843,6 +847,8 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
     @Nullable @Override public final CacheObject innerReload()
         throws IgniteCheckedException, GridCacheEntryRemovedException {
         CU.checkStore(cctx);
+
+        TestDebugLog.addEntryMessage(keyValue(false), CU.value(val, cctx, false), "initialReload");
 
         GridCacheVersion startVer;
 
@@ -1604,6 +1610,8 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
     ) throws IgniteCheckedException, GridCacheEntryRemovedException, GridClosureException {
         assert cctx.atomic();
 
+        TestDebugLog.addEntryMessage(keyValue(false), CU.value((CacheObject)writeObj, cctx, false), "innerUpdate");
+
         boolean res = true;
 
         CacheObject oldVal;
@@ -2036,8 +2044,19 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
                         deletedUnlocked(false);
                 }
                 else {
-                    assert !deletedUnlocked() : "Invalid entry [entry=" + this +
-                        ", locNodeId=" + cctx.localNodeId() + ']';
+                    try {
+                        assert !deletedUnlocked() : "Invalid entry [entry=" + this +
+                            ", locNodeId=" + cctx.localNodeId() + ']';
+                    }
+                    catch (AssertionError e) {
+                        e.printStackTrace();
+
+                        TestDebugLog.addEntryMessage(keyValue(false), CU.value(updated, cctx, false), "Failed innerUpdate: " + e.getMessage());
+
+                        TestDebugLog.printKeyMessages(null, keyValue(false));
+
+                        System.exit(1);
+                    }
 
                     // Do not change size.
                 }
@@ -2320,6 +2339,8 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
         boolean rmv;
         boolean marked;
 
+        TestDebugLog.addEntryMessage(keyValue(false), CU.value(val, cctx, false), "clear");
+
         while (true) {
             ret = false;
             rmv = false;
@@ -2533,6 +2554,8 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
         throws IgniteCheckedException {
         assert newVer != null;
 
+        TestDebugLog.addEntryMessage(keyValue(false), CU.value(val, cctx, false), "invalidate");
+
         if (curVer == null || ver.equals(curVer)) {
             CacheObject val = saveValueForIndexUnlocked();
 
@@ -2560,6 +2583,8 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
     /** {@inheritDoc} */
     @Override public boolean invalidate(@Nullable CacheEntryPredicate[] filter)
         throws GridCacheEntryRemovedException, IgniteCheckedException {
+        TestDebugLog.addEntryMessage(keyValue(false), CU.value(val, cctx, false), "invalidate2");
+
         if (F.isEmptyOrNulls(filter)) {
             synchronized (this) {
                 checkObsolete();
@@ -2696,8 +2721,11 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
     protected void checkObsolete() throws GridCacheEntryRemovedException {
         assert Thread.holdsLock(this);
 
-        if (obsoleteVersionExtras() != null)
+        if (obsoleteVersionExtras() != null) {
+            TestDebugLog.addEntryMessage(keyValue(false), CU.value(val, cctx, false), "wasObsolete throw");
+
             throw new GridCacheEntryRemovedException();
+        }
     }
 
     /** {@inheritDoc} */
@@ -2957,6 +2985,8 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
     @Override public synchronized CacheObject rawPut(CacheObject val, long ttl) {
         CacheObject old = this.val;
 
+        TestDebugLog.addEntryMessage(keyValue(false), CU.value(val, cctx, false), "rawPut");
+
         update(val, CU.toExpireTime(ttl), ttl, nextVersion());
 
         return old;
@@ -2977,6 +3007,8 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
             checkObsolete();
 
             if (isNew() || (!preload && deletedUnlocked())) {
+                TestDebugLog.addEntryMessage(keyValue(false), CU.value(val, cctx, false), "initialValue");
+
                 long expTime = expireTime < 0 ? CU.toExpireTime(ttl) : expireTime;
 
                 val = cctx.kernalContext().cacheObjects().prepareForCache(val, cctx);
@@ -3029,6 +3061,8 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
         checkObsolete();
 
         if (isNew()) {
+            TestDebugLog.addEntryMessage(keyValue(false), CU.value(val, cctx, false), "initialValueSwap");
+
             CacheObject val = unswapped.value();
 
             val = cctx.kernalContext().cacheObjects().prepareForCache(val, cctx);
@@ -3067,6 +3101,8 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
         throws IgniteCheckedException, GridCacheEntryRemovedException
     {
         checkObsolete();
+
+        TestDebugLog.addEntryMessage(keyValue(false), CU.value(val, cctx, false), "versionedValue");
 
         if (curVer == null || curVer.equals(ver)) {
             if (val != this.val) {
@@ -3611,6 +3647,8 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
         @Nullable CacheEntryPredicate[] filter) throws IgniteCheckedException {
         boolean marked = false;
 
+        TestDebugLog.addEntryMessage(keyValue(false), CU.value(val, cctx, false), "evict");
+
         try {
             if (F.isEmptyOrNulls(filter)) {
                 synchronized (this) {
@@ -3992,19 +4030,32 @@ public abstract class GridCacheMapEntry implements GridCacheEntryEx {
         assert Thread.holdsLock(this);
         assert cctx.deferredDelete();
 
-        if (deleted) {
-            assert !deletedUnlocked() : this;
+        TestDebugLog.addEntryMessage(keyValue(false), deleted, "deleted unlocked");
 
-            flags |= IS_DELETED_MASK;
+        try {
+            if (deleted) {
+                assert !deletedUnlocked() : this;
 
-            cctx.decrementPublicSize(this);
+                flags |= IS_DELETED_MASK;
+
+                cctx.decrementPublicSize(this);
+            }
+            else {
+                assert deletedUnlocked() : this;
+
+                flags &= ~IS_DELETED_MASK;
+
+                cctx.incrementPublicSize(this);
+            }
         }
-        else {
-            assert deletedUnlocked() : this;
+        catch (AssertionError e) {
+            e.printStackTrace();
 
-            flags &= ~IS_DELETED_MASK;
+            TestDebugLog.addEntryMessage(keyValue(false), CU.value(val, cctx, false), "Failed deletedUnlocked: " + e.getMessage());
 
-            cctx.incrementPublicSize(this);
+            TestDebugLog.printKeyMessages(null, keyValue(false));
+
+            System.exit(1);
         }
     }
 

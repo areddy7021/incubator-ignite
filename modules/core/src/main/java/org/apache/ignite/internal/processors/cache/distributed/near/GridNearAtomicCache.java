@@ -214,6 +214,8 @@ public class GridNearAtomicCache<K, V> extends GridNearCacheAdapter<K, V> {
 
                     GridCacheOperation op = (val != null || valBytes != null) ? UPDATE : DELETE;
 
+                    TestDebugLog.addEntryMessage(CU.value(entry.key(), ctx, false), CU.value((CacheObject)val, ctx, false), "update near response");
+
                     GridCacheUpdateAtomicResult updRes = entry.innerUpdate(
                         ver,
                         nodeId,
@@ -310,6 +312,8 @@ public class GridNearAtomicCache<K, V> extends GridNearCacheAdapter<K, V> {
 
                         long ttl = req.nearTtl(i);
                         long expireTime = req.nearExpireTime(i);
+
+                        TestDebugLog.addEntryMessage(CU.value(entry.key(), ctx, false), CU.value((CacheObject)val, ctx, false), "update reader");
 
                         GridCacheUpdateAtomicResult updRes = entry.innerUpdate(
                             ver,

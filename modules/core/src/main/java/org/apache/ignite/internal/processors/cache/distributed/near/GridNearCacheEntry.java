@@ -154,6 +154,8 @@ public class GridNearCacheEntry extends GridDistributedCacheEntry {
                             checkObsolete();
 
                             if (isNew() || !valid(topVer)) {
+                                TestDebugLog.addEntryMessage(keyValue(false), CU.value(val, cctx, false), "init from DHT");
+
                                 // Version does not change for load ops.
                                 update(e.value(), e.expireTime(), e.ttl(), e.isNew() ? ver : e.version());
 
@@ -376,6 +378,8 @@ public class GridNearCacheEntry extends GridDistributedCacheEntry {
                 boolean hasVal = hasValueUnlocked();
 
                 if (isNew() || !valid || expVer == null || expVer.equals(this.dhtVer)) {
+                    TestDebugLog.addEntryMessage(keyValue(false), CU.value(val, cctx, false), "near loaded");
+
                     primaryNode(primaryNodeId, topVer);
 
                     // Change entry only if dht version has changed.
