@@ -690,9 +690,8 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     }
 
     /** {@inheritDoc} */
-    @Override public boolean removex(K key,
-        @Nullable CacheEntryPredicate[] filter) throws IgniteCheckedException {
-        return removexAsync(key, filter).get();
+    @Override public boolean removex(K key) throws IgniteCheckedException {
+        return removexAsync(key, (CacheEntryPredicate[])null).get();
     }
 
     /** {@inheritDoc} */

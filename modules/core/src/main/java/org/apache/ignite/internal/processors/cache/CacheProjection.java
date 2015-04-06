@@ -1240,7 +1240,7 @@ public interface CacheProjection<K, V> extends Iterable<Cache.Entry<K, V>> {
      * @throws NullPointerException if the key is {@code null}.
      * @throws IgniteCheckedException If remove failed.
      */
-    public boolean removex(K key, @Nullable CacheEntryPredicate... filter)
+    public boolean removex(K key)
         throws IgniteCheckedException;
 
     /**
