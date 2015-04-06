@@ -114,28 +114,6 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
     }
 
     /**
-     * @param subjId Subject ID.
-     * @param ctx Grid kernal context.
-     * @param p Predicate.
-     * @param ids Node IDs.
-     */
-    private ClusterGroupAdapter(@Nullable GridKernalContext ctx,
-        @Nullable UUID subjId,
-        @Nullable IgnitePredicate<ClusterNode> p,
-        Set<UUID> ids)
-    {
-        if (ctx != null)
-            setKernalContext(ctx);
-
-        this.subjId = subjId;
-        this.p = p;
-        this.ids = ids;
-
-        if (p == null && ids != null)
-            this.p = F.nodeForNodeIds(ids);
-    }
-
-    /**
      * <tt>ctx.gateway().readLock()</tt>
      */
     protected void guard() {
@@ -806,7 +784,7 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
          * @param isOldest Oldest flag.
          */
         private AgeClusterGroup(ClusterGroupAdapter parent, boolean isOldest) {
-            super(parent.ctx, parent.subjId, (IgnitePredicate<ClusterNode>) null);
+            super(parent.ctx, parent.subjId, (IgnitePredicate<ClusterNode>)null);
 
             this.isOldest = isOldest;
 
@@ -822,7 +800,10 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
             try {
                 lastTopVer = ctx.discovery().topologyVersion();
 
-                this.node = isOldest ? U.oldest(super.nodes(), null) : U.youngest(super.nodes(), null);
+                Collection<ClusterNode> nodes = ctx.discovery().allNodes();
+
+                this.node = isOldest ? U.oldest(nodes, null) : U.youngest(nodes, null);
+
                 this.p = F.nodeForNodes(node);
             }
             finally {
