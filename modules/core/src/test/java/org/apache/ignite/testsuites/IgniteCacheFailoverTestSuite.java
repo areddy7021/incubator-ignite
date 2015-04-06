@@ -40,6 +40,24 @@ public class IgniteCacheFailoverTestSuite extends TestSuite {
         suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
         suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
         suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
+        suite.addTestSuite(GridCacheAtomicNearRemoveFailureTest.class);
 
         return suite;
     }
