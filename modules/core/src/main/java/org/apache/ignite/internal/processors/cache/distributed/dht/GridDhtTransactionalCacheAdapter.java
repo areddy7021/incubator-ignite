@@ -559,8 +559,7 @@ public abstract class GridDhtTransactionalCacheAdapter<K, V> extends GridDhtCach
         boolean isRead,
         boolean retval,
         TransactionIsolation isolation,
-        long accessTtl,
-        CacheEntryPredicate[] filter) {
+        long accessTtl) {
         return lockAllAsyncInternal(
             keys,
             timeout,
@@ -569,8 +568,7 @@ public abstract class GridDhtTransactionalCacheAdapter<K, V> extends GridDhtCach
             isRead,
             retval,
             isolation,
-            accessTtl,
-            filter);
+            accessTtl);
     }
 
     /**
@@ -584,7 +582,6 @@ public abstract class GridDhtTransactionalCacheAdapter<K, V> extends GridDhtCach
      * @param retval Return value flag.
      * @param isolation Transaction isolation.
      * @param accessTtl TTL for read operation.
-     * @param filter Optional filter.
      * @return Lock future.
      */
     public GridDhtFuture<Boolean> lockAllAsyncInternal(@Nullable Collection<KeyCacheObject> keys,
@@ -594,8 +591,7 @@ public abstract class GridDhtTransactionalCacheAdapter<K, V> extends GridDhtCach
         boolean isRead,
         boolean retval,
         TransactionIsolation isolation,
-        long accessTtl,
-        CacheEntryPredicate[] filter) {
+        long accessTtl) {
         if (keys == null || keys.isEmpty())
             return new GridDhtFinishedFuture<>(true);
 
@@ -614,8 +610,7 @@ public abstract class GridDhtTransactionalCacheAdapter<K, V> extends GridDhtCach
             timeout,
             tx,
             tx.threadId(),
-            accessTtl,
-            filter);
+            accessTtl, null);
 
         for (KeyCacheObject key : keys) {
             try {

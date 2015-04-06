@@ -1089,8 +1089,7 @@ public class GridNearTxLocal extends GridDhtTxLocalAdapter {
             read,
             /*retval*/false,
             isolation,
-            accessTtl,
-            CU.empty0());
+            accessTtl);
 
         return new GridEmbeddedFuture<>(
             fut,

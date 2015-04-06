@@ -110,48 +110,37 @@ public class GridLocalCache<K, V> extends GridCacheAdapter<K, V> {
         boolean retval,
         TransactionIsolation isolation,
         boolean invalidate,
-        long accessTtl,
-        CacheEntryPredicate[] filter) {
-        return lockAllAsync(keys, timeout, tx, filter);
+        long accessTtl) {
+        return lockAllAsync(keys, timeout, tx);
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<Boolean> lockAllAsync(Collection<? extends K> keys, long timeout,
-        CacheEntryPredicate[] filter) {
+    @Override public IgniteInternalFuture<Boolean> lockAllAsync(Collection<? extends K> keys, long timeout) {
         IgniteTxLocalEx tx = ctx.tm().localTx();
 
-        return lockAllAsync(ctx.cacheKeysView(keys), timeout, tx, filter);
+        return lockAllAsync(ctx.cacheKeysView(keys), timeout, tx);
     }
 
     /**
      * @param keys Keys.
      * @param timeout Timeout.
      * @param tx Transaction.
-     * @param filter Filter.
      * @return Future.
      */
     public IgniteInternalFuture<Boolean> lockAllAsync(Collection<KeyCacheObject> keys,
         long timeout,
-        @Nullable IgniteTxLocalEx tx,
-        CacheEntryPredicate[] filter) {
+        @Nullable IgniteTxLocalEx tx) {
         if (F.isEmpty(keys))
             return new GridFinishedFuture<>(true);
 
-        GridLocalLockFuture<K, V> fut = new GridLocalLockFuture<>(ctx, keys, tx, this, timeout, filter);
+        GridLocalLockFuture<K, V> fut = new GridLocalLockFuture<>(ctx, keys, tx, this, timeout, null);
 
-        try {
             for (KeyCacheObject key : keys) {
                 while (true) {
                     GridLocalCacheEntry entry = null;
 
                     try {
                         entry = entryExx(key);
-
-                        if (!ctx.isAll(entry, filter)) {
-                            fut.onFailed();
-
-                            return fut;
-                        }
 
                         // Removed exception may be thrown here.
                         GridCacheMvccCandidate cand = fut.addEntry(entry);
@@ -175,25 +164,18 @@ public class GridLocalCache<K, V> extends GridCacheAdapter<K, V> {
             fut.checkLocks();
 
             return fut;
-        }
-        catch (IgniteCheckedException e) {
-            fut.onError(e);
-
-            return fut;
-        }
     }
 
     /** {@inheritDoc} */
     @Override public void unlockAll(
-        Collection<? extends K> keys,
-        CacheEntryPredicate[] filter
+        Collection<? extends K> keys
     ) throws IgniteCheckedException {
         AffinityTopologyVersion topVer = ctx.affinity().affinityTopologyVersion();
 
         for (K key : keys) {
             GridLocalCacheEntry entry = peekExx(ctx.toCacheKeyObject(key));
 
-            if (entry != null && ctx.isAll(entry, filter)) {
+            if (entry != null) {
                 entry.releaseLocal();
 
                 ctx.evicts().touch(entry, topVer);
