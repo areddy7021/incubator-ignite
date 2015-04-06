@@ -86,7 +86,6 @@ public interface IgniteTxLocalEx extends IgniteInternalTx {
      * @param retval Flag indicating whether a value should be returned.
      * @param cached Cached entry, if any. Will be provided only if map has size 1.
      * @param filter Filter.
-     * @param ttl Time to live for entry. If negative, leave unchanged.
      * @return Future for put operation.
      */
     public <K, V> IgniteInternalFuture<GridCacheReturn> putAllAsync(
@@ -94,7 +93,6 @@ public interface IgniteTxLocalEx extends IgniteInternalTx {
         Map<? extends K, ? extends V> map,
         boolean retval,
         @Nullable GridCacheEntryEx cached,
-        long ttl,
         CacheEntryPredicate[] filter);
 
     /**

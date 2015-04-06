@@ -1879,7 +1879,6 @@ public abstract class IgniteTxLocalAdapter extends IgniteTxAdapter
         Map<? extends K, ? extends V> map,
         boolean retval,
         @Nullable GridCacheEntryEx cached,
-        long ttl,
         CacheEntryPredicate[] filter
     ) {
         return (IgniteInternalFuture<GridCacheReturn>)putAllAsync0(cacheCtx,

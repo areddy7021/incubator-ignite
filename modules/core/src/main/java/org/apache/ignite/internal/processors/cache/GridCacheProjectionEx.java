@@ -48,12 +48,11 @@ public interface GridCacheProjectionEx<K, V> extends CacheProjection<K, V> {
      * @param key Key.
      * @param val Value.
      * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
-     * @param ttl Optional time-to-live. If negative, leaves ttl value unchanged.
      * @param filter Optional filter.
      * @return Previous value.
      * @throws IgniteCheckedException If failed.
      */
-    @Nullable public V put(K key, V val, @Nullable GridCacheEntryEx entry, long ttl,
+    @Nullable public V put(K key, V val, @Nullable GridCacheEntryEx entry,
         @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException;
 
     /**
@@ -62,11 +61,10 @@ public interface GridCacheProjectionEx<K, V> extends CacheProjection<K, V> {
      * @param key Key.
      * @param val Value.
      * @param entry Optional cached entry.
-     * @param ttl Optional time-to-live value. If negative, leaves ttl value unchanged.
      * @param filter Optional filter.
      * @return Put operation future.
      */
-    public IgniteInternalFuture<V> putAsync(K key, V val, @Nullable GridCacheEntryEx entry, long ttl,
+    public IgniteInternalFuture<V> putAsync(K key, V val, @Nullable GridCacheEntryEx entry,
         @Nullable CacheEntryPredicate... filter);
 
     /**
@@ -75,12 +73,11 @@ public interface GridCacheProjectionEx<K, V> extends CacheProjection<K, V> {
      * @param key Key.
      * @param val Value.
      * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
-     * @param ttl Optional time-to-live. If negative, leaves ttl value unchanged.
      * @param filter Optional filter.
      * @return Previous value.
      * @throws IgniteCheckedException If failed.
      */
-    public boolean putx(K key, V val, @Nullable GridCacheEntryEx entry, long ttl,
+    public boolean putx(K key, V val, @Nullable GridCacheEntryEx entry,
         @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException;
 
     /**
@@ -89,11 +86,10 @@ public interface GridCacheProjectionEx<K, V> extends CacheProjection<K, V> {
      * @param key Key.
      * @param val Value.
      * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
-     * @param ttl Optional time-to-live. If negative, leave ttl value unchanged.
      * @param filter Optional filter.
      * @return Putx operation future.
      */
-    public IgniteInternalFuture<Boolean> putxAsync(K key, V val, @Nullable GridCacheEntryEx entry, long ttl,
+    public IgniteInternalFuture<Boolean> putxAsync(K key, V val, @Nullable GridCacheEntryEx entry,
         @Nullable CacheEntryPredicate... filter);
 
     /**

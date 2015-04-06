@@ -355,29 +355,29 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     }
 
     /** {@inheritDoc} */
-    @Override public V put(K key, V val, @Nullable GridCacheEntryEx entry, long ttl,
+    @Override public V put(K key, V val, @Nullable GridCacheEntryEx entry,
         @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
-        return cache.put(key, val, entry, ttl, filter);
+        return cache.put(key, val, entry, filter);
     }
 
     /** {@inheritDoc} */
     @Override public IgniteInternalFuture<V> putAsync(K key, V val,
         @Nullable CacheEntryPredicate[] filter) {
-        return putAsync(key, val, null, -1, filter);
+        return putAsync(key, val, null, filter);
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<V> putAsync(K key, V val, @Nullable GridCacheEntryEx entry, long ttl,
+    @Override public IgniteInternalFuture<V> putAsync(K key, V val, @Nullable GridCacheEntryEx entry,
         @Nullable CacheEntryPredicate[] filter) {
         A.notNull(key, "key", val, "val");
 
-        return cache.putAsync(key, val, entry, ttl, filter);
+        return cache.putAsync(key, val, entry, filter);
     }
 
     /** {@inheritDoc} */
-    @Override public boolean putx(K key, V val, @Nullable GridCacheEntryEx entry, long ttl,
+    @Override public boolean putx(K key, V val, @Nullable GridCacheEntryEx entry,
         @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
-        return cache.putx(key, val, entry, ttl, filter);
+        return cache.putx(key, val, entry, filter);
     }
 
     /** {@inheritDoc} */
@@ -441,15 +441,15 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     /** {@inheritDoc} */
     @Override public IgniteInternalFuture<Boolean> putxAsync(K key, V val,
         @Nullable CacheEntryPredicate[] filter) {
-        return putxAsync(key, val, null, -1, filter);
+        return putxAsync(key, val, null, filter);
     }
 
     /** {@inheritDoc} */
     @Override public IgniteInternalFuture<Boolean> putxAsync(K key, V val, @Nullable GridCacheEntryEx entry,
-        long ttl, @Nullable CacheEntryPredicate[] filter) {
+        @Nullable CacheEntryPredicate[] filter) {
         A.notNull(key, "key", val, "val");
 
-        return cache.putxAsync(key, val, entry, ttl, filter);
+        return cache.putxAsync(key, val, entry, filter);
     }
 
     /** {@inheritDoc} */

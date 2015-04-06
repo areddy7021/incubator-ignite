@@ -301,15 +301,15 @@ public class GridDhtAtomicCache<K, V> extends GridDhtCacheAdapter<K, V> {
     }
 
     /** {@inheritDoc} */
-    @Override public V put(K key, V val, @Nullable GridCacheEntryEx cached, long ttl,
+    @Override public V put(K key, V val, @Nullable GridCacheEntryEx cached,
         @Nullable CacheEntryPredicate[] filter) throws IgniteCheckedException {
-        return putAsync(key, val, cached, ttl, filter).get();
+        return putAsync(key, val, cached, filter).get();
     }
 
     /** {@inheritDoc} */
     @Override public boolean putx(K key, V val, @Nullable GridCacheEntryEx cached,
-        long ttl, @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
-        return putxAsync(key, val, cached, ttl, filter).get();
+        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
+        return putxAsync(key, val, cached, filter).get();
     }
 
     /** {@inheritDoc} */
@@ -321,7 +321,7 @@ public class GridDhtAtomicCache<K, V> extends GridDhtCacheAdapter<K, V> {
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override public IgniteInternalFuture<V> putAsync(K key, V val, @Nullable GridCacheEntryEx entry,
-        long ttl, @Nullable CacheEntryPredicate... filter) {
+        @Nullable CacheEntryPredicate... filter) {
         A.notNull(key, "key");
 
         return updateAllAsync0(F0.asMap(key, val),
@@ -337,7 +337,7 @@ public class GridDhtAtomicCache<K, V> extends GridDhtCacheAdapter<K, V> {
 
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
-    @Override public IgniteInternalFuture<Boolean> putxAsync(K key, V val, @Nullable GridCacheEntryEx entry, long ttl,
+    @Override public IgniteInternalFuture<Boolean> putxAsync(K key, V val, @Nullable GridCacheEntryEx entry,
         @Nullable CacheEntryPredicate... filter) {
         A.notNull(key, "key");
 
