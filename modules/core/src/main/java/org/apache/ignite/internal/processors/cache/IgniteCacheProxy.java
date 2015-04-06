@@ -33,6 +33,7 @@ import org.apache.ignite.internal.util.typedef.*;
 import org.apache.ignite.internal.util.typedef.internal.*;
 import org.apache.ignite.lang.*;
 import org.apache.ignite.mxbean.*;
+import org.apache.ignite.spi.discovery.tcp.internal.*;
 import org.jetbrains.annotations.*;
 
 import javax.cache.*;
@@ -146,8 +147,16 @@ public class IgniteCacheProxy<K, V> extends AsyncSupportAdapter<IgniteCache<K, V
         try {
             List<CacheMetrics> metrics = new ArrayList<>(grp.nodes().size());
 
-            for (ClusterNode node : grp.nodes())
-                metrics.add(node.cacheMetrics().get(context().cacheId()));
+            for (ClusterNode node : grp.nodes()) {
+                Map<Integer, CacheMetrics> nodeCacheMetrics = ((TcpDiscoveryNode)node).cacheMetrics();
+
+                if (nodeCacheMetrics != null) {
+                    CacheMetrics e = nodeCacheMetrics.get(context().cacheId());
+
+                    if (e != null)
+                        metrics.add(e);
+                }
+            }
 
             return new CacheMetricsSnapshot(ctx.cache().metrics(), metrics);
         }

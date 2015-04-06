@@ -191,11 +191,6 @@ public class GridTestNode extends GridMetadataAwareAdapter implements ClusterNod
     }
 
     /** {@inheritDoc} */
-    @Override public Map<Integer, CacheMetrics> cacheMetrics() {
-        return cacheMetrics;
-    }
-
-    /** {@inheritDoc} */
     @Override public long order() {
         return order != 0 ? order : (metrics == null ? -1 : metrics.getStartTime());
     }

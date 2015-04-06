@@ -263,8 +263,6 @@ public class CacheMetricsSnapshot implements CacheMetrics, Externalizable {
      * @param metrics Metrics for merge.
      */
     public CacheMetricsSnapshot(CacheMetrics loc, Collection<CacheMetrics> metrics) {
-        A.notEmpty(metrics, "metrics");
-
         id = loc.id();
         cacheName = loc.name();
         isEmpty = loc.isEmpty();

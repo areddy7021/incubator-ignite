@@ -5154,7 +5154,6 @@ public class TcpDiscoverySpi extends TcpDiscoverySpiAdapter implements TcpDiscov
                     metrics = hbMsg.metrics().get(nodeId).metrics();
 
                     hbMsg.removeMetrics(nodeId);
-
                     hbMsg.removeCacheMetrics(nodeId);
 
                     assert !hbMsg.hasMetrics();

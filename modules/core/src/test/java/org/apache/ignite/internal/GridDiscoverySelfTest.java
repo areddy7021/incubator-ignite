@@ -376,11 +376,6 @@ public class GridDiscoverySelfTest extends GridCommonAbstractTest {
         }
 
         /** {@inheritDoc} */
-        @Nullable @Override public Map<Integer, CacheMetrics> cacheMetrics() {
-            return null;
-        }
-
-        /** {@inheritDoc} */
         @Nullable @Override public Map<String, Object> attributes() {
             return null;
         }

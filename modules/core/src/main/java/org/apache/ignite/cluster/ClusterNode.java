@@ -149,18 +149,6 @@ public interface ClusterNode {
     public ClusterMetrics metrics();
 
     /**
-     * Gets collections of cache metrics for this node. Note that node cache metrics are constantly updated
-     * and provide up to date information about caches.
-     * <p>
-     * Cache metrics are updated with some delay which is directly related to heartbeat
-     * frequency. For example, when used with default
-     * {@link org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi} the update will happen every {@code 2} seconds.
-     *
-     * @return Runtime metrics snapshots for this node.
-     */
-    public Map<Integer, CacheMetrics> cacheMetrics();
-
-    /**
      * Gets all node attributes. Attributes are assigned to nodes at startup
      * via {@link org.apache.ignite.configuration.IgniteConfiguration#getUserAttributes()} method.
      * <p>

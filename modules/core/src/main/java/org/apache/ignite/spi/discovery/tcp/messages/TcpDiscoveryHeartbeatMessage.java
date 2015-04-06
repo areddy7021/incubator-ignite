@@ -98,7 +98,8 @@ public class TcpDiscoveryHeartbeatMessage extends TcpDiscoveryAbstractMessage {
         assert metrics != null;
         assert !this.cacheMetrics.containsKey(nodeId);
 
-        this.cacheMetrics.put(nodeId, metrics);
+        if (!F.isEmpty(metrics))
+            this.cacheMetrics.put(nodeId, metrics);
     }
 
     /**
