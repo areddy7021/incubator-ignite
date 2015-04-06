@@ -351,7 +351,7 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     /** {@inheritDoc} */
     @Override public V put(K key, V val, @Nullable CacheEntryPredicate[] filter)
         throws IgniteCheckedException {
-        return putAsync(key, val, filter).get();
+        return putAsync(key, val, null, filter).get();
     }
 
     /** {@inheritDoc} */
@@ -361,9 +361,8 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<V> putAsync(K key, V val,
-        @Nullable CacheEntryPredicate[] filter) {
-        return putAsync(key, val, null, filter);
+    @Override public IgniteInternalFuture<V> putAsync(K key, V val) {
+        return putAsync(key, val, null, null);
     }
 
     /** {@inheritDoc} */
@@ -382,7 +381,7 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
 
     /** {@inheritDoc} */
     @Override public boolean putx(K key, V val) throws IgniteCheckedException {
-        return putxAsync(key, val, null).get();
+        return putxAsync(key, val).get();
     }
 
     /** {@inheritDoc} */
@@ -438,9 +437,8 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<Boolean> putxAsync(K key, V val,
-        @Nullable CacheEntryPredicate[] filter) {
-        return putxAsync(key, val, null, filter);
+    @Override public IgniteInternalFuture<Boolean> putxAsync(K key, V val) {
+        return putxAsync(key, val, null, null);
     }
 
     /** {@inheritDoc} */
@@ -458,7 +456,7 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
 
     /** {@inheritDoc} */
     @Override public IgniteInternalFuture<V> putIfAbsentAsync(K key, V val) {
-        return putAsync(key, val, cctx.noValArray());
+        return cache.putAsync(key, val, null, cctx.noValArray());
     }
 
     /** {@inheritDoc} */
@@ -468,7 +466,7 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
 
     /** {@inheritDoc} */
     @Override public IgniteInternalFuture<Boolean> putxIfAbsentAsync(K key, V val) {
-        return putxAsync(key, val, cctx.noValArray());
+        return cache.putxAsync(key, val, null, cctx.noValArray());
     }
 
     /** {@inheritDoc} */
@@ -478,7 +476,7 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
 
     /** {@inheritDoc} */
     @Override public IgniteInternalFuture<V> replaceAsync(K key, V val) {
-        return putAsync(key, val, cctx.hasValArray());
+        return cache.putAsync(key, val, null, cctx.hasValArray());
     }
 
     /** {@inheritDoc} */
@@ -488,7 +486,7 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
 
     /** {@inheritDoc} */
     @Override public IgniteInternalFuture<Boolean> replacexAsync(K key, V val) {
-        return putxAsync(key, val, cctx.hasValArray());
+        return cache.putxAsync(key, val, null, cctx.hasValArray());
     }
 
     /** {@inheritDoc} */

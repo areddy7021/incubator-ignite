@@ -604,12 +604,11 @@ public class GridCacheProxyImpl<K, V> implements GridCacheProxy<K, V>, Externali
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<V> putAsync(K key, V val,
-        @Nullable CacheEntryPredicate[] filter) {
+    @Override public IgniteInternalFuture<V> putAsync(K key, V val) {
         GridCacheProjectionImpl<K, V> prev = gate.enter(prj);
 
         try {
-            return delegate.putAsync(key, val, filter);
+            return delegate.putAsync(key, val);
         }
         finally {
             gate.leave(prev);
@@ -766,12 +765,11 @@ public class GridCacheProxyImpl<K, V> implements GridCacheProxy<K, V>, Externali
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<Boolean> putxAsync(K key, V val,
-        @Nullable CacheEntryPredicate[] filter) {
+    @Override public IgniteInternalFuture<Boolean> putxAsync(K key, V val) {
         GridCacheProjectionImpl<K, V> prev = gate.enter(prj);
 
         try {
-            return delegate.putxAsync(key, val, filter);
+            return delegate.putxAsync(key, val);
         }
         finally {
             gate.leave(prev);

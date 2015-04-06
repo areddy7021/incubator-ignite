@@ -2076,7 +2076,40 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<V> putAsync(K key, V val,
+    @Override public IgniteInternalFuture<V> putAsync(K key, V val) {
+        return putAsync(key, val, null);
+    }
+
+    /**
+     * Asynchronously stores given key-value pair in cache. If filters are provided, then entries will
+     * be stored in cache only if they pass the filter. Note that filter check is atomic,
+     * so value stored in cache is guaranteed to be consistent with the filters. If cache
+     * previously contained value for the given key, then this value is returned. Otherwise,
+     * in case of {@link CacheMode#REPLICATED} caches, the value will be loaded from swap
+     * and, if it's not there, and read-through is allowed, from the underlying
+     * {@link org.apache.ignite.cache.store.CacheStore} storage. In case of {@link CacheMode#PARTITIONED} caches,
+     * the value will be loaded from the primary node, which in its turn may load the value
+     * from the swap storage, and consecutively, if it's not in swap and read-through is allowed,
+     * from the underlying persistent storage. If value has to be loaded from persistent
+     * storage,  <code>CacheStore#load(Transaction, Object)</code> method will be used.
+     * <p>
+     * If the returned value is not needed, method <code>#putx(Object, Object, org.apache.ignite.lang.IgnitePredicate[])</code> should
+     * always be used instead of this one to avoid the overhead associated with returning of the previous value.
+     * <p>
+     * If write-through is enabled, the stored value will be persisted to {@link org.apache.ignite.cache.store.CacheStore}
+     * via <code>CacheStore#put(Transaction, Object, Object)</code> method.
+     * <h2 class="header">Transactions</h2>
+     * This method is transactional and will enlist the entry into ongoing transaction
+     * if there is one.
+     *
+     * @param key Key to store in cache.
+     * @param val Value to be associated with the given key.
+     * @param filter Optional filter to check prior to putting value in cache. Note
+     *      that filter check is atomic with put operation.
+     * @return Future for the put operation.
+     * @throws NullPointerException If either key or value are {@code null}.
+     */
+    public IgniteInternalFuture<V> putAsync(K key, V val,
         @Nullable CacheEntryPredicate[] filter) {
         final boolean statsEnabled = ctx.config().isStatisticsEnabled();
 
@@ -2411,7 +2444,36 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<Boolean> putxAsync(K key, V val,
+    @Override public IgniteInternalFuture<Boolean> putxAsync(K key, V val) {
+        return putxAsync(key, val, null);
+    }
+
+    /**
+     * Stores given key-value pair in cache. If filters are provided, then entries will
+     * be stored in cache only if they pass the filter. Note that filter check is atomic,
+     * so value stored in cache is guaranteed to be consistent with the filters.
+     * <p>
+     * This method will return {@code true} if value is stored in cache and {@code false} otherwise.
+     * Unlike <code>#put(Object, Object, org.apache.ignite.lang.IgnitePredicate[])</code> method, it does not return previous
+     * value and, therefore, does not have any overhead associated with returning of a value. It
+     * should always be used whenever return value is not required.
+     * <p>
+     * If write-through is enabled, the stored value will be persisted to {@link org.apache.ignite.cache.store.CacheStore}
+     * via <code>CacheStore#put(Transaction, Object, Object)</code> method.
+     * <h2 class="header">Transactions</h2>
+     * This method is transactional and will enlist the entry into ongoing transaction
+     * if there is one.
+     *
+     * @param key Key to store in cache.
+     * @param val Value to be associated with the given key.
+     * @param filter Optional filter to check prior to putting value in cache. Note
+     *      that filter check is atomic with put operation.
+     * @return Future for the put operation. Future will return {@code true} if optional filter
+     *      passed and value was stored in cache, {@code false} otherwise. Note that future will
+     *      return {@code true} if filter is not specified.
+     * @throws NullPointerException If either key or value are {@code null}.
+     */
+    public IgniteInternalFuture<Boolean> putxAsync(K key, V val,
         @Nullable CacheEntryPredicate... filter) {
         final boolean statsEnabled = ctx.config().isStatisticsEnabled();
 
