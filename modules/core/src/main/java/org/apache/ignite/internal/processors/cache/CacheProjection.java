@@ -830,23 +830,6 @@ public interface CacheProjection<K, V> extends Iterable<Cache.Entry<K, V>> {
     public Set<K> keySet();
 
     /**
-     * Set of keys cached on this node. You can remove elements from this set, but you cannot add elements
-     * to this set. All removal operation will be reflected on the cache itself.
-     * <p>
-     * Iterator over this set will not fail if set was concurrently updated
-     * by another thread. This means that iterator may or may not return latest
-     * keys depending on whether they were added before or after current
-     * iterator position.
-     * <p>
-     * NOTE: this operation is not distributed and returns only the keys cached on this node.
-     *
-     * @param filter Optional filter to check prior to getting key form cache. Note
-     * that filter is checked atomically together with get operation.
-     * @return Key set for this cache projection.
-     */
-    public Set<K> keySet(@Nullable CacheEntryPredicate... filter);
-
-    /**
      * Set of keys for which this node is primary.
      * This set is dynamic and may change with grid topology changes.
      * Note that this set will contain mappings for all keys, even if their values are
@@ -1240,15 +1223,12 @@ public interface CacheProjection<K, V> extends Iterable<Cache.Entry<K, V>> {
      * if there is one.
      *
      * @param key Key whose mapping is to be removed from cache.
-     * @param filter Optional filter to check prior to removing value form cache. Note
-     *      that filter is checked atomically together with remove operation.
      * @return Future for the remove operation. The future will return {@code true}
      *      if optional filters passed validation and remove did occur, {@code false} otherwise.
      *      Note that if filter is not specified, this method will return {@code true}.
      * @throws NullPointerException if the key is {@code null}.
      */
-    public IgniteInternalFuture<Boolean> removexAsync(K key,
-        @Nullable CacheEntryPredicate... filter);
+    public IgniteInternalFuture<Boolean> removexAsync(K key);
 
     /**
      * Removes given key mapping from cache if one exists and value is equal to the passed in value.

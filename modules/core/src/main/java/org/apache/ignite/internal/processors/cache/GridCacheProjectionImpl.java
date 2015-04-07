@@ -517,11 +517,6 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     }
 
     /** {@inheritDoc} */
-    @Override public Set<K> keySet(@Nullable CacheEntryPredicate... filter) {
-        return cache.keySet(filter);
-    }
-
-    /** {@inheritDoc} */
     @Override public Set<K> primaryKeySet() {
         return cache.primaryKeySet();
     }
@@ -685,7 +680,7 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
 
     /** {@inheritDoc} */
     @Override public boolean removex(K key) throws IgniteCheckedException {
-        return removexAsync(key, (CacheEntryPredicate[])null).get();
+        return removexAsync(key).get();
     }
 
     /** {@inheritDoc} */
@@ -706,9 +701,8 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<Boolean> removexAsync(K key,
-        @Nullable CacheEntryPredicate[] filter) {
-        return removexAsync(key, null, filter);
+    @Override public IgniteInternalFuture<Boolean> removexAsync(K key) {
+        return removexAsync(key, null, CU.empty0());
     }
 
     /** {@inheritDoc} */

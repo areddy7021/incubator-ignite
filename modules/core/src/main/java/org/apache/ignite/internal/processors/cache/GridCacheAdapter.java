@@ -3024,7 +3024,34 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<Boolean> removexAsync(K key, CacheEntryPredicate... filter) {
+    @Override public IgniteInternalFuture<Boolean> removexAsync(K key) {
+        A.notNull(key, "key");
+
+        return removexAsync(key, null, CU.empty0());
+    }
+
+
+    /**
+     * Asynchronously removes given key mapping from cache.
+     * <p>
+     * This method will return {@code true} if remove did occur, which means that all optionally
+     * provided filters have passed and there was something to remove, {@code false} otherwise.
+     * <p>
+     * If write-through is enabled, the value will be removed from {@link org.apache.ignite.cache.store.CacheStore}
+     * via <code>CacheStore#remove(Transaction, Object)</code> method.
+     * <h2 class="header">Transactions</h2>
+     * This method is transactional and will enlist the entry into ongoing transaction
+     * if there is one.
+     *
+     * @param key Key whose mapping is to be removed from cache.
+     * @param filter Optional filter to check prior to removing value form cache. Note
+     *      that filter is checked atomically together with remove operation.
+     * @return Future for the remove operation. The future will return {@code true}
+     *      if optional filters passed validation and remove did occur, {@code false} otherwise.
+     *      Note that if filter is not specified, this method will return {@code true}.
+     * @throws NullPointerException if the key is {@code null}.
+     */
+    public IgniteInternalFuture<Boolean> removexAsync(K key, CacheEntryPredicate... filter) {
         A.notNull(key, "key");
 
         return removexAsync(key, null, filter);
@@ -4636,7 +4663,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
      * @param filter Filters to evaluate.
      * @return Key set.
      */
-    @Override public Set<K> keySet(@Nullable CacheEntryPredicate... filter) {
+    public Set<K> keySet(@Nullable CacheEntryPredicate... filter) {
         return map.keySet(filter);
     }
 
