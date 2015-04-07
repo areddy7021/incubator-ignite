@@ -578,12 +578,12 @@ public class GridCacheProxyImpl<K, V> implements GridCacheProxy<K, V>, Externali
     }
 
     /** {@inheritDoc} */
-    @Nullable @Override public V put(K key, V val, @Nullable CacheEntryPredicate[] filter)
+    @Nullable @Override public V put(K key, V val)
         throws IgniteCheckedException {
         GridCacheProjectionImpl<K, V> prev = gate.enter(prj);
 
         try {
-            return delegate.put(key, val, filter);
+            return delegate.put(key, val);
         }
         finally {
             gate.leave(prev);

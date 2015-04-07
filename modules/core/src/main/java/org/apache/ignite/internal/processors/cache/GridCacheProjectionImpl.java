@@ -349,9 +349,8 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     }
 
     /** {@inheritDoc} */
-    @Override public V put(K key, V val, @Nullable CacheEntryPredicate[] filter)
-        throws IgniteCheckedException {
-        return putAsync(key, val, null, filter).get();
+    @Override public V put(K key, V val) throws IgniteCheckedException {
+        return putAsync(key, val, null, CU.empty0()).get();
     }
 
     /** {@inheritDoc} */

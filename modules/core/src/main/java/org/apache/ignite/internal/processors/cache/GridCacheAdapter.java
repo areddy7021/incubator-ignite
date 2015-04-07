@@ -2014,7 +2014,41 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     }
 
     /** {@inheritDoc} */
-    @Override public V put(K key, V val, @Nullable CacheEntryPredicate... filter)
+    @Override public V put(K key, V val) throws IgniteCheckedException {
+        return put(key, val, null, CU.empty0());
+    }
+
+    /**
+     * Stores given key-value pair in cache. If filters are provided, then entries will
+     * be stored in cache only if they pass the filter. Note that filter check is atomic,
+     * so value stored in cache is guaranteed to be consistent with the filters. If cache
+     * previously contained value for the given key, then this value is returned.
+     * In case of {@link CacheMode#PARTITIONED} or {@link CacheMode#REPLICATED} caches,
+     * the value will be loaded from the primary node, which in its turn may load the value
+     * from the swap storage, and consecutively, if it's not in swap,
+     * from the underlying persistent storage. If value has to be loaded from persistent
+     * storage,  <code>CacheStore#load(Transaction, Object)</code> method will be used.
+     * <p>
+     * If the returned value is not needed, method <code>#putx(Object, Object, org.apache.ignite.lang.IgnitePredicate[])</code> should
+     * always be used instead of this one to avoid the overhead associated with returning of the previous value.
+     * <p>
+     * If write-through is enabled, the stored value will be persisted to {@link org.apache.ignite.cache.store.CacheStore}
+     * via <code>CacheStore#put(Transaction, Object, Object)</code> method.
+     * <h2 class="header">Transactions</h2>
+     * This method is transactional and will enlist the entry into ongoing transaction
+     * if there is one.
+     *
+     * @param key Key to store in cache.
+     * @param val Value to be associated with the given key.
+     * @param filter Optional filter to check prior to putting value in cache. Note
+     *      that filter check is atomic with put operation.
+     * @return Previous value associated with specified key, or {@code null}
+     *  if entry did not pass the filter, or if there was no mapping for the key in swap
+     *  or in persistent storage.
+     * @throws NullPointerException If either key or value are {@code null}.
+     * @throws IgniteCheckedException If put operation failed.
+     */
+    public V put(K key, V val, @Nullable CacheEntryPredicate... filter)
         throws IgniteCheckedException {
         return put(key, val, null, filter);
     }
