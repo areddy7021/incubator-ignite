@@ -120,9 +120,9 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
      * @param ids Node IDs.
      */
     private ClusterGroupAdapter(@Nullable GridKernalContext ctx,
-                                @Nullable UUID subjId,
-                                @Nullable IgnitePredicate<ClusterNode> p,
-                                Set<UUID> ids)
+        @Nullable UUID subjId,
+        @Nullable IgnitePredicate<ClusterNode> p,
+        Set<UUID> ids)
     {
         if (ctx != null)
             setKernalContext(ctx);
@@ -320,7 +320,7 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
     }
 
     /** {@inheritDoc} */
-    @Override public final IgnitePredicate<ClusterNode> predicate() {
+    @Override public IgnitePredicate<ClusterNode> predicate() {
         return p != null ? p : F.<ClusterNode>alwaysTrue();
     }
 
@@ -809,9 +809,25 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
          * @param isOldest Oldest flag.
          */
         private AgeClusterGroup(ClusterGroupAdapter parent, boolean isOldest) {
-            super(parent.ctx, parent.subjId, parent.p, parent.ids);
+            this(parent.ctx, parent.subjId, parent.p, parent.ids, isOldest);
+        }
 
-            this.parentP = parent.p;
+        /**
+         * @param ctx Context.
+         * @param subjId Subj ID.
+         * @param p Parent predicate.
+         * @param ids Ids.
+         * @param isOldest Is oldest.
+         */
+        private AgeClusterGroup(GridKernalContext ctx,
+            UUID subjId,
+            IgnitePredicate<ClusterNode> p,
+            Set<UUID> ids,
+            boolean isOldest)
+        {
+            super(ctx, subjId, p, ids);
+
+            this.parentP = p;
             this.isOldest = isOldest;
 
             reset();
@@ -856,6 +872,14 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
         }
 
         /** {@inheritDoc} */
+        @Override public IgnitePredicate<ClusterNode> predicate() {
+            if (ctx.discovery().topologyVersion() != lastTopVer)
+                reset();
+
+            return super.predicate();
+        }
+
+        /** {@inheritDoc} */
         @Override public ClusterGroup forPredicate(IgnitePredicate<ClusterNode> p) {
             A.notNull(p, "p");
 
@@ -873,6 +897,34 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
             finally {
                 unguard();
             }
+        }
+
+        /** {@inheritDoc} */
+        @Override public void writeExternal(ObjectOutput out) throws IOException {
+            super.writeExternal(out);
+
+            out.writeBoolean(isOldest);
+            out.writeObject(parentP);
+        }
+
+        /** {@inheritDoc} */
+        @Override public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+            super.readExternal(in);
+
+            isOldest = in.readBoolean();
+            parentP = (IgnitePredicate<ClusterNode>)in.readObject();
+        }
+
+        /**
+         * Reconstructs object on unmarshalling.
+         *
+         * @return Reconstructed object.
+         * @throws ObjectStreamException Thrown in case of unmarshalling error.
+         */
+        protected Object readResolve() throws ObjectStreamException {
+            ClusterGroupAdapter parent = (ClusterGroupAdapter)super.readResolve();
+
+            return new AgeClusterGroup(parent.ctx, parent.subjId, parentP, parent.ids, isOldest);
         }
     }
 
@@ -900,7 +952,16 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
 
         /** {@inheritDoc} */
         @Override public boolean apply(ClusterNode node) {
+            A.notNull(node, "node is null");
+
             return grp.predicate().apply(node) && p.apply(node);
+        }
+
+        /** {@inheritDoc} */
+        @Override public String toString() {
+            return getClass().getName() +
+                " [grp='" + grp.getClass().getName() +
+                "', p='" + p.getClass().getName() + "']";
         }
     }
 }
