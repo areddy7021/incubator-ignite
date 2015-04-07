@@ -502,15 +502,13 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     }
 
     /** {@inheritDoc} */
-    @Override public void putAll(Map<? extends K, ? extends V> m,
-        @Nullable CacheEntryPredicate[] filter) throws IgniteCheckedException {
-        putAllAsync(m, filter).get();
+    @Override public void putAll(Map<? extends K, ? extends V> m) throws IgniteCheckedException {
+        putAllAsync(m).get();
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<?> putAllAsync(Map<? extends K, ? extends V> m,
-        @Nullable CacheEntryPredicate[] filter) {
-        return cache.putAllAsync(m, filter);
+    @Override public IgniteInternalFuture<?> putAllAsync(Map<? extends K, ? extends V> m) {
+        return cache.putAllAsync(m);
     }
 
     /** {@inheritDoc} */

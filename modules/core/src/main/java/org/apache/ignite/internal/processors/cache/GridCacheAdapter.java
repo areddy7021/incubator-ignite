@@ -461,7 +461,6 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
      * @param isolation Transaction isolation.
      * @param invalidate Invalidate flag.
      * @param accessTtl TTL for read operation.
-     * @param filter Optional filter.
      * @return Locks future.
      */
     public abstract IgniteInternalFuture<Boolean> txLockAsync(
@@ -2794,8 +2793,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     }
 
     /** {@inheritDoc} */
-    @Override public void putAll(@Nullable final Map<? extends K, ? extends V> m,
-        final CacheEntryPredicate[] filter) throws IgniteCheckedException {
+    @Override public void putAll(@Nullable final Map<? extends K, ? extends V> m) throws IgniteCheckedException {
         boolean statsEnabled = ctx.config().isStatisticsEnabled();
 
         long start = statsEnabled ? System.nanoTime() : 0L;
@@ -2810,11 +2808,11 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
 
         syncOp(new SyncInOp(m.size() == 1) {
             @Override public void inOp(IgniteTxLocalAdapter tx) throws IgniteCheckedException {
-                tx.putAllAsync(ctx, m, false, null, filter).get();
+                tx.putAllAsync(ctx, m, false, null, null).get();
             }
 
             @Override public String toString() {
-                return "putAll [map=" + m + ", filter=" + Arrays.toString(filter) + ']';
+                return "putAll [map=" + m + ']';
             }
         });
 
@@ -2823,8 +2821,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<?> putAllAsync(final Map<? extends K, ? extends V> m,
-        @Nullable final CacheEntryPredicate... filter) {
+    @Override public IgniteInternalFuture<?> putAllAsync(final Map<? extends K, ? extends V> m) {
         if (F.isEmpty(m))
             return new GridFinishedFuture<Object>();
 
@@ -2835,11 +2832,11 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
 
         return asyncOp(new AsyncInOp(m.keySet()) {
             @Override public IgniteInternalFuture<?> inOp(IgniteTxLocalAdapter tx) {
-                return tx.putAllAsync(ctx, m, false, null, filter).chain(RET2NULL);
+                return tx.putAllAsync(ctx, m, false, null, CU.empty0()).chain(RET2NULL);
             }
 
             @Override public String toString() {
-                return "putAllAsync [map=" + m + ", filter=" + Arrays.toString(filter) + ']';
+                return "putAllAsync [map=" + m + ']';
             }
         });
     }

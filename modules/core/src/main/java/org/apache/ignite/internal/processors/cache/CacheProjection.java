@@ -794,12 +794,9 @@ public interface CacheProjection<K, V> extends Iterable<Cache.Entry<K, V>> {
      * if there is one.
      *
      * @param m Key-value pairs to store in cache.
-     * @param filter Optional entry filter. If provided, then entry will
-     *      be stored only if the filter returned {@code true}.
      * @throws IgniteCheckedException If put operation failed.
      */
-    public void putAll(@Nullable Map<? extends K, ? extends V> m,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException;
+    public void putAll(@Nullable Map<? extends K, ? extends V> m) throws IgniteCheckedException;
 
     /**
      * Asynchronously stores given key-value pairs in cache. If filters are provided, then entries will
@@ -813,12 +810,9 @@ public interface CacheProjection<K, V> extends Iterable<Cache.Entry<K, V>> {
      * if there is one.
      *
      * @param m Key-value pairs to store in cache.
-     * @param filter Optional entry filter. If provided, then entry will
-     *      be stored only if the filter returned {@code true}.
      * @return Future for putAll operation.
      */
-    public IgniteInternalFuture<?> putAllAsync(@Nullable Map<? extends K, ? extends V> m,
-        @Nullable CacheEntryPredicate... filter);
+    public IgniteInternalFuture<?> putAllAsync(@Nullable Map<? extends K, ? extends V> m);
 
     /**
      * Set of keys cached on this node. You can remove elements from this set, but you cannot add elements
