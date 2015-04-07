@@ -1516,12 +1516,11 @@ public class GridCacheProxyImpl<K, V> implements GridCacheProxy<K, V>, Externali
     }
 
     /** {@inheritDoc} */
-    @Override public void removeAll(@Nullable Collection<? extends K> keys,
-        @Nullable CacheEntryPredicate[] filter) throws IgniteCheckedException {
+    @Override public void removeAll(@Nullable Collection<? extends K> keys) throws IgniteCheckedException {
         GridCacheProjectionImpl<K, V> prev = gate.enter(prj);
 
         try {
-            delegate.removeAll(keys, filter);
+            delegate.removeAll(keys);
         }
         finally {
             gate.leave(prev);
@@ -1529,12 +1528,11 @@ public class GridCacheProxyImpl<K, V> implements GridCacheProxy<K, V>, Externali
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<?> removeAllAsync(@Nullable Collection<? extends K> keys,
-        @Nullable CacheEntryPredicate[] filter) {
+    @Override public IgniteInternalFuture<?> removeAllAsync(@Nullable Collection<? extends K> keys) {
         GridCacheProjectionImpl<K, V> prev = gate.enter(prj);
 
         try {
-            return delegate.removeAllAsync(keys, filter);
+            return delegate.removeAllAsync(keys);
         }
         finally {
             gate.leave(prev);

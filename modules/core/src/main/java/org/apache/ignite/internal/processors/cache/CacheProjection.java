@@ -1299,12 +1299,9 @@ public interface CacheProjection<K, V> extends Iterable<Cache.Entry<K, V>> {
      * if there is one.
      *
      * @param keys Keys whose mappings are to be removed from cache.
-     * @param filter Optional filter to check prior to removing value form cache. Note
-     *      that filter is checked atomically together with remove operation.
      * @throws IgniteCheckedException If remove failed.
      */
-    public void removeAll(@Nullable Collection<? extends K> keys,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException;
+    public void removeAll(@Nullable Collection<? extends K> keys) throws IgniteCheckedException;
 
     /**
      * Asynchronously removes given key mappings from cache for entries for which the optionally
@@ -1317,13 +1314,10 @@ public interface CacheProjection<K, V> extends Iterable<Cache.Entry<K, V>> {
      * if there is one.
      *
      * @param keys Keys whose mappings are to be removed from cache.
-     * @param filter Optional filter to check prior to removing value form cache. Note
-     *      that filter is checked atomically together with remove operation.
      * @return Future for the remove operation. The future will complete whenever
      *      remove operation completes.
      */
-    public IgniteInternalFuture<?> removeAllAsync(@Nullable Collection<? extends K> keys,
-        @Nullable CacheEntryPredicate... filter);
+    public IgniteInternalFuture<?> removeAllAsync(@Nullable Collection<? extends K> keys);
 
     /**
      * Removes mappings from cache for entries for which the optionally passed in filters do

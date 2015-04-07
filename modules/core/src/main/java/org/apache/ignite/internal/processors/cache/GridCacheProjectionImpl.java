@@ -750,15 +750,13 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     }
 
     /** {@inheritDoc} */
-    @Override public void removeAll(@Nullable Collection<? extends K> keys,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
-        cache.removeAll(keys, filter);
+    @Override public void removeAll(@Nullable Collection<? extends K> keys) throws IgniteCheckedException {
+        cache.removeAll(keys);
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<?> removeAllAsync(@Nullable Collection<? extends K> keys,
-        @Nullable CacheEntryPredicate[] filter) {
-        return cache.removeAllAsync(keys, filter);
+    @Override public IgniteInternalFuture<?> removeAllAsync(@Nullable Collection<? extends K> keys) {
+        return cache.removeAllAsync(keys);
     }
 
     /** {@inheritDoc} */
