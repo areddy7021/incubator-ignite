@@ -60,10 +60,10 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
     private String gridName;
 
     /** Subject ID. */
-    private UUID subjId;
+    protected UUID subjId;
 
     /** Cluster group predicate. */
-    protected IgnitePredicate<ClusterNode> p;
+    protected volatile IgnitePredicate<ClusterNode> p;
 
     /** Node IDs. */
     private Set<UUID> ids;
@@ -111,6 +111,28 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
         this.ids = ids;
 
         p = F.nodeForNodeIds(ids);
+    }
+
+    /**
+     * @param subjId Subject ID.
+     * @param ctx Grid kernal context.
+     * @param p Predicate.
+     * @param ids Node IDs.
+     */
+    private ClusterGroupAdapter(@Nullable GridKernalContext ctx,
+                                @Nullable UUID subjId,
+                                @Nullable IgnitePredicate<ClusterNode> p,
+                                Set<UUID> ids)
+    {
+        if (ctx != null)
+            setKernalContext(ctx);
+
+        this.subjId = subjId;
+        this.p = p;
+        this.ids = ids;
+
+        if (p == null && ids != null)
+            this.p = F.nodeForNodeIds(ids);
     }
 
     /**
@@ -303,7 +325,7 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
     }
 
     /** {@inheritDoc} */
-    @Override public final ClusterGroup forPredicate(IgnitePredicate<ClusterNode> p) {
+    @Override public ClusterGroup forPredicate(IgnitePredicate<ClusterNode> p) {
         A.notNull(p, "p");
 
         guard();
@@ -769,6 +791,9 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
         /** Selected node. */
         private volatile ClusterNode node;
 
+        /** Node predicate. */
+        private IgnitePredicate<ClusterNode> parentP;
+
         /** Last topology version. */
         private volatile long lastTopVer;
 
@@ -784,8 +809,9 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
          * @param isOldest Oldest flag.
          */
         private AgeClusterGroup(ClusterGroupAdapter parent, boolean isOldest) {
-            super(parent.ctx, parent.subjId, (IgnitePredicate<ClusterNode>)null);
+            super(parent.ctx, parent.subjId, parent.p, parent.ids);
 
+            this.parentP = parent.p;
             this.isOldest = isOldest;
 
             reset();
@@ -800,9 +826,9 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
             try {
                 lastTopVer = ctx.discovery().topologyVersion();
 
-                Collection<ClusterNode> nodes = ctx.discovery().allNodes();
+                this.p = parentP;
 
-                this.node = isOldest ? U.oldest(nodes, null) : U.youngest(nodes, null);
+                this.node = isOldest ? U.oldest(super.nodes(), null) : U.youngest(super.nodes(), null);
 
                 this.p = F.nodeForNodes(node);
             }
@@ -827,6 +853,54 @@ public class ClusterGroupAdapter implements ClusterGroupEx, Externalizable {
             ClusterNode node = this.node;
 
             return node == null ? Collections.<ClusterNode>emptyList() : Collections.singletonList(node);
+        }
+
+        /** {@inheritDoc} */
+        @Override public ClusterGroup forPredicate(IgnitePredicate<ClusterNode> p) {
+            A.notNull(p, "p");
+
+            guard();
+
+            try {
+                if (p != null)
+                    ctx.resource().injectGeneric(p);
+
+                return new ClusterGroupAdapter(ctx, this.subjId, new GroupPredicate(this, p));
+            }
+            catch (IgniteCheckedException e) {
+                throw U.convertException(e);
+            }
+            finally {
+                unguard();
+            }
+        }
+    }
+
+    /**
+     * Dynamic cluster group based predicate.
+     */
+    private static class GroupPredicate implements IgnitePredicate<ClusterNode> {
+        /** */
+        private static final long serialVersionUID = 0L;
+
+        /** Target cluster group. */
+        private final ClusterGroup grp;
+
+        /** Predicate. */
+        private final IgnitePredicate<ClusterNode> p;
+
+        /**
+         * @param grp Cluster group.
+         * @param p Predicate.
+         */
+        public GroupPredicate(ClusterGroup grp, IgnitePredicate<ClusterNode> p) {
+            this.grp = grp;
+            this.p = p;
+        }
+
+        /** {@inheritDoc} */
+        @Override public boolean apply(ClusterNode node) {
+            return grp.predicate().apply(node) && p.apply(node);
         }
     }
 }
