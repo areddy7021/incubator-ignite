@@ -610,7 +610,8 @@ public abstract class GridDhtTransactionalCacheAdapter<K, V> extends GridDhtCach
             timeout,
             tx,
             tx.threadId(),
-            accessTtl, null);
+            accessTtl,
+            CU.empty0());
 
         for (KeyCacheObject key : keys) {
             try {

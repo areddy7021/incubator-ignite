@@ -370,7 +370,7 @@ public class GridDhtColocatedCache<K, V> extends GridDhtTransactionalCacheAdapte
             retval,
             timeout,
             accessTtl,
-            null);
+            CU.empty0());
 
         // Future will be added to mvcc only if it was mapped to remote nodes.
         fut.map();
@@ -413,9 +413,6 @@ public class GridDhtColocatedCache<K, V> extends GridDhtTransactionalCacheAdapte
                 KeyCacheObject cacheKey = ctx.toCacheKeyObject(key);
 
                 GridDistributedCacheEntry entry = peekExx(cacheKey);
-
-                if (entry == null)
-                    break; // While.
 
                 GridCacheMvccCandidate lock =
                     ctx.mvcc().removeExplicitLock(Thread.currentThread().getId(), cacheKey, null);

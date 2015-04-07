@@ -137,8 +137,7 @@ public class GridLocalAtomicCache<K, V> extends GridCacheAdapter<K, V> {
     }
 
     /** {@inheritDoc} */
-    @Override public boolean putx(K key,
-                                  V val) throws IgniteCheckedException {
+    @Override public boolean putx(K key, V val) throws IgniteCheckedException {
         return putx(key, val, null);
     }
 
