@@ -1103,18 +1103,18 @@ public class TcpClientDiscoverySpi extends TcpDiscoverySpiAdapter implements Tcp
 
                 if (msg.hasMetrics()) {
                     for (Map.Entry<UUID, MetricsSet> e : msg.metrics().entrySet()) {
+                        UUID nodeId = e.getKey();
+
                         MetricsSet metricsSet = e.getValue();
 
-                        updateMetrics(e.getKey(), metricsSet.metrics(), tstamp);
+                        Map<Integer, CacheMetrics> cacheMetrics = msg.hasCacheMetrics() ?
+                                msg.cacheMetrics().get(nodeId) : Collections.<Integer, CacheMetrics>emptyMap();
+
+                        updateMetrics(nodeId, metricsSet.metrics(), cacheMetrics, tstamp);
 
                         for (T2<UUID, ClusterMetrics> t : metricsSet.clientMetrics())
-                            updateMetrics(t.get1(), t.get2(), tstamp);
+                            updateMetrics(t.get1(), t.get2(), cacheMetrics, tstamp);
                     }
-                }
-
-                if (msg.hasCacheMetrics()) {
-                    for (Map.Entry<UUID, Map<Integer, CacheMetrics>> e : msg.cacheMetrics().entrySet())
-                        updateCacheMetrics(e.getKey(), e.getValue(), tstamp);
                 }
             }
         }
@@ -1161,37 +1161,22 @@ public class TcpClientDiscoverySpi extends TcpDiscoverySpiAdapter implements Tcp
         /**
          * @param nodeId Node ID.
          * @param metrics Metrics.
+         * @param cacheMetrics Cache metrics.
          * @param tstamp Timestamp.
          */
-        private void updateMetrics(UUID nodeId, ClusterMetrics metrics, long tstamp) {
+        private void updateMetrics(UUID nodeId,
+            ClusterMetrics metrics,
+            Map<Integer, CacheMetrics> cacheMetrics,
+            long tstamp)
+        {
             assert nodeId != null;
             assert metrics != null;
+            assert cacheMetrics != null;
 
             TcpDiscoveryNode node = nodeId.equals(getLocalNodeId()) ? locNode : rmtNodes.get(nodeId);
 
             if (node != null && node.visible()) {
                 node.setMetrics(metrics);
-
-                node.lastUpdateTime(tstamp);
-
-                notifyDiscovery(EVT_NODE_METRICS_UPDATED, topVer, node, allNodes());
-            }
-            else if (log.isDebugEnabled())
-                log.debug("Received metrics from unknown node: " + nodeId);
-        }
-
-        /**
-         * @param nodeId Node ID.
-         * @param cacheMetrics Cache metrics.
-         * @param tstamp Timestamp.
-         */
-        private void updateCacheMetrics(UUID nodeId, Map<Integer, CacheMetrics> cacheMetrics, long tstamp) {
-            assert nodeId != null;
-            assert cacheMetrics != null;
-
-            TcpDiscoveryNode node = nodeId.equals(ignite.configuration().getNodeId()) ? locNode : rmtNodes.get(nodeId);
-
-            if (node != null && node.visible()) {
                 node.setCacheMetrics(cacheMetrics);
 
                 node.lastUpdateTime(tstamp);
@@ -1199,7 +1184,7 @@ public class TcpClientDiscoverySpi extends TcpDiscoverySpiAdapter implements Tcp
                 notifyDiscovery(EVT_NODE_METRICS_UPDATED, topVer, node, allNodes());
             }
             else if (log.isDebugEnabled())
-                log.debug("Received cacheMetrics from unknown node: " + nodeId);
+                log.debug("Received metrics from unknown node: " + nodeId);
         }
 
         /**

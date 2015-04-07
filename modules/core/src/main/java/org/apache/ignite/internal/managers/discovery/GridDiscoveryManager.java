@@ -654,13 +654,19 @@ public class GridDiscoveryManager extends GridManagerAdapter<DiscoverySpi> {
                 if (F.isEmpty(caches))
                     return Collections.emptyMap();
 
-                Map<Integer, CacheMetrics> metrics = U.newHashMap(caches.size());
+                Map<Integer, CacheMetrics> metrics = null;
 
-                for (GridCacheAdapter<?, ?> cache : caches)
-                    if (cache.configuration().isStatisticsEnabled())
+                for (GridCacheAdapter<?, ?> cache : caches) {
+                    if (cache.configuration().isStatisticsEnabled()) {
+                        if (metrics == null) {
+                            metrics = U.newHashMap(caches.size());
+                        }
+
                         metrics.put(cache.context().cacheId(), cache.metrics());
+                    }
+                }
 
-                return metrics;
+                return metrics == null ? Collections.<Integer, CacheMetrics>emptyMap() : metrics;
             }
         };
     }

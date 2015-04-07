@@ -4253,18 +4253,18 @@ public class TcpDiscoverySpi extends TcpDiscoverySpiAdapter implements TcpDiscov
             if (spiStateCopy() == CONNECTED) {
                 if (msg.hasMetrics()) {
                     for (Map.Entry<UUID, MetricsSet> e : msg.metrics().entrySet()) {
+                        UUID nodeId = e.getKey();
+
                         MetricsSet metricsSet = e.getValue();
 
-                        updateMetrics(e.getKey(), metricsSet.metrics(), tstamp);
+                        Map<Integer, CacheMetrics> cacheMetrics = msg.hasCacheMetrics() ?
+                                msg.cacheMetrics().get(nodeId) : Collections.<Integer, CacheMetrics>emptyMap();
+
+                        updateMetrics(nodeId, metricsSet.metrics(), cacheMetrics, tstamp);
 
                         for (T2<UUID, ClusterMetrics> t : metricsSet.clientMetrics())
-                            updateMetrics(t.get1(), t.get2(), tstamp);
+                            updateMetrics(t.get1(), t.get2(), cacheMetrics, tstamp);
                     }
-                }
-
-                if (msg.hasCacheMetrics()) {
-                    for (Map.Entry<UUID, Map<Integer, CacheMetrics>> e : msg.cacheMetrics().entrySet())
-                        updateCacheMetrics(e.getKey(), e.getValue(), tstamp);
                 }
             }
 
@@ -4273,7 +4273,6 @@ public class TcpDiscoverySpi extends TcpDiscoverySpiAdapter implements TcpDiscov
                     !hasMetrics(msg, locNodeId)) && spiStateCopy() == CONNECTED) {
                     // Message is on its first ring or just created on coordinator.
                     msg.setMetrics(locNodeId, metricsProvider.metrics());
-
                     msg.setCacheMetrics(locNodeId, metricsProvider.cacheMetrics());
 
                     for (Map.Entry<UUID, ClientMessageWorker> e : clientMsgWorkers.entrySet()) {
@@ -4288,9 +4287,7 @@ public class TcpDiscoverySpi extends TcpDiscoverySpiAdapter implements TcpDiscov
                 }
                 else {
                     // Message is on its second ring.
-                    msg.removeMetrics(locNodeId);
-
-                    msg.removeCacheMetrics(locNodeId);
+                    removeMetrics(msg, locNodeId);
 
                     Collection<UUID> clientNodeIds = msg.clientNodeIds();
 
@@ -4323,37 +4320,22 @@ public class TcpDiscoverySpi extends TcpDiscoverySpiAdapter implements TcpDiscov
         /**
          * @param nodeId Node ID.
          * @param metrics Metrics.
+         * @param cacheMetrics Cache metrics.
          * @param tstamp Timestamp.
          */
-        private void updateMetrics(UUID nodeId, ClusterMetrics metrics, long tstamp) {
+        private void updateMetrics(UUID nodeId,
+            ClusterMetrics metrics,
+            Map<Integer, CacheMetrics> cacheMetrics,
+            long tstamp)
+        {
             assert nodeId != null;
             assert metrics != null;
+            assert cacheMetrics != null;
 
             TcpDiscoveryNode node = ring.node(nodeId);
 
             if (node != null) {
                 node.setMetrics(metrics);
-
-                node.lastUpdateTime(tstamp);
-
-                notifyDiscovery(EVT_NODE_METRICS_UPDATED, ring.topologyVersion(), node);
-            }
-            else if (log.isDebugEnabled())
-                log.debug("Received metrics from unknown node: " + nodeId);
-        }
-
-        /**
-         * @param nodeId Node ID.
-         * @param cacheMetrics Cache metrics.
-         * @param tstamp Timestamp.
-         */
-        private void updateCacheMetrics(UUID nodeId, Map<Integer, CacheMetrics> cacheMetrics, long tstamp) {
-            assert nodeId != null;
-            assert cacheMetrics != null;
-
-            TcpDiscoveryNode node = ring.node(nodeId);
-
-            if (node != null && node.visible()) {
                 node.setCacheMetrics(cacheMetrics);
 
                 node.lastUpdateTime(tstamp);
@@ -4361,7 +4343,7 @@ public class TcpDiscoverySpi extends TcpDiscoverySpiAdapter implements TcpDiscov
                 notifyDiscovery(EVT_NODE_METRICS_UPDATED, ring.topologyVersion(), node);
             }
             else if (log.isDebugEnabled())
-                log.debug("Received cacheMetrics from unknown node: " + nodeId);
+                log.debug("Received metrics from unknown node: " + nodeId);
         }
 
         /**
@@ -5153,8 +5135,7 @@ public class TcpDiscoverySpi extends TcpDiscoverySpiAdapter implements TcpDiscov
                 if (hbMsg.creatorNodeId().equals(nodeId)) {
                     metrics = hbMsg.metrics().get(nodeId).metrics();
 
-                    hbMsg.removeMetrics(nodeId);
-                    hbMsg.removeCacheMetrics(nodeId);
+                    removeMetrics(hbMsg, nodeId);
 
                     assert !hbMsg.hasMetrics();
                     assert !hbMsg.hasCacheMetrics();
@@ -5202,5 +5183,14 @@ public class TcpDiscoverySpi extends TcpDiscoverySpiAdapter implements TcpDiscov
 
             U.closeQuiet(sock);
         }
+    }
+
+    /**
+     * @param msg Message.
+     * @param nodeId Node ID.
+     */
+    private void removeMetrics(TcpDiscoveryHeartbeatMessage msg, UUID nodeId) {
+        msg.removeMetrics(nodeId);
+        msg.removeCacheMetrics(nodeId);
     }
 }

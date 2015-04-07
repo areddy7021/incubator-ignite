@@ -197,10 +197,12 @@ public class TcpDiscoveryNode extends GridMetadataAwareAdapter implements Cluste
 
     /** {@inheritDoc} */
     @Override public ClusterMetrics metrics() {
-        if (metricsProvider != null)
-            metrics = metricsProvider.metrics();
+        ClusterMetrics metrics0 = null;
 
-        return metrics;
+        if (metricsProvider != null)
+            metrics = metrics0 = metricsProvider.metrics();
+
+        return metrics0 == null ? metrics : metrics0;
     }
 
     /**
@@ -225,10 +227,12 @@ public class TcpDiscoveryNode extends GridMetadataAwareAdapter implements Cluste
      * @return Runtime metrics snapshots for this node.
      */
     public Map<Integer, CacheMetrics> cacheMetrics() {
-        if (metricsProvider != null)
-            cacheMetrics = metricsProvider.cacheMetrics();
+        Map<Integer, CacheMetrics> cacheMetrics0 = null;
 
-        return cacheMetrics;
+        if (metricsProvider != null)
+            cacheMetrics = cacheMetrics0 = metricsProvider.cacheMetrics();
+
+        return cacheMetrics0 == null ? cacheMetrics : cacheMetrics0;
     }
 
     /**
