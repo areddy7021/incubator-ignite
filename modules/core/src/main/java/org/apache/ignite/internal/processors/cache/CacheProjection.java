@@ -1179,12 +1179,10 @@ public interface CacheProjection<K, V> extends Iterable<Cache.Entry<K, V>> {
      * if there is one.
      *
      * @param key Key whose mapping is to be removed from cache.
-     * @param filter Optional filter to check prior to removing value form cache. Note
-     *      that filter is checked atomically together with remove operation.
      * @return Future for the remove operation.
      * @throws NullPointerException if the key is {@code null}.
      */
-    public IgniteInternalFuture<V> removeAsync(K key, CacheEntryPredicate... filter);
+    public IgniteInternalFuture<V> removeAsync(K key);
 
     /**
      * Removes given key mapping from cache.

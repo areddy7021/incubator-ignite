@@ -2915,12 +2915,12 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<V> removeAsync(K key, CacheEntryPredicate... filter) {
+    @Override public IgniteInternalFuture<V> removeAsync(K key) {
         final boolean statsEnabled = ctx.config().isStatisticsEnabled();
 
         final long start = statsEnabled ? System.nanoTime() : 0L;
 
-        IgniteInternalFuture<V> fut = removeAsync(key, null, filter);
+        IgniteInternalFuture<V> fut = removeAsync(key, null, CU.empty0());
 
         if (statsEnabled)
             fut.listen(new UpdateRemoveTimeStatClosure<V>(metrics0(), start));

@@ -1328,11 +1328,11 @@ public class GridCacheProxyImpl<K, V> implements GridCacheProxy<K, V>, Externali
     }
 
     /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<V> removeAsync(K key, CacheEntryPredicate[] filter) {
+    @Override public IgniteInternalFuture<V> removeAsync(K key) {
         GridCacheProjectionImpl<K, V> prev = gate.enter(prj);
 
         try {
-            return delegate.removeAsync(key, filter);
+            return delegate.removeAsync(key);
         }
         finally {
             gate.leave(prev);
