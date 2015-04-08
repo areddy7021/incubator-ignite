@@ -2818,32 +2818,34 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     /** {@inheritDoc} */
     @Nullable @Override public V remove(K key)
         throws IgniteCheckedException {
-        return remove(key, null, null);
-    }
-
-    /**
-     * Internal method that is called from {@link CacheEntryImpl}.
-     *
-     * @param key Key to remove.
-     * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
-     * @param filter Optional filter.
-     * @return Previous value.
-     * @throws IgniteCheckedException If failed.
-     */
-    public V remove(final K key, @Nullable final GridCacheEntryEx entry,
-        @Nullable final CacheEntryPredicate... filter) throws IgniteCheckedException {
         boolean statsEnabled = ctx.config().isStatisticsEnabled();
 
         long start = statsEnabled ? System.nanoTime() : 0L;
 
         A.notNull(key, "key");
 
+        V prevVal = remove0(key);
+
+        if (statsEnabled)
+            metrics0().addRemoveAndGetTimeNanos(System.nanoTime() - start);
+
+        return prevVal;
+    }
+
+    /**
+     * Internal method that is called from {@link CacheEntryImpl}.
+     *
+     * @param key Key to remove.
+     * @return Previous value.
+     * @throws IgniteCheckedException If failed.
+     */
+    public V remove0(final K key) throws IgniteCheckedException {
         if (keyCheck)
             validateCacheKey(key);
 
         V prevVal = syncOp(new SyncOp<V>(true) {
             @Override public V op(IgniteTxLocalAdapter tx) throws IgniteCheckedException {
-                V ret = (V) tx.removeAllAsync(ctx, Collections.singletonList(key), entry, true, filter).get().value();
+                V ret = (V) tx.removeAllAsync(ctx, Collections.singletonList(key), null, true, null).get().value();
 
                 if (ctx.config().getInterceptor() != null)
                     return (V) ctx.config().getInterceptor().onBeforeRemove(new CacheEntryImpl(key, ret)).get2();
@@ -2852,12 +2854,9 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
             }
 
             @Override public String toString() {
-                return "remove [key=" + key + ", filter=" + Arrays.toString(filter) + ']';
+                return "remove [key=" + key + ']';
             }
         });
-
-        if (statsEnabled)
-            metrics0().addRemoveAndGetTimeNanos(System.nanoTime() - start);
 
         return prevVal;
     }
@@ -2868,7 +2867,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
 
         final long start = statsEnabled ? System.nanoTime() : 0L;
 
-        IgniteInternalFuture<V> fut = removeAsync(key, null, CU.empty0());
+        IgniteInternalFuture<V> fut = removeAsync0(key, CU.empty0());
 
         if (statsEnabled)
             fut.listen(new UpdateRemoveTimeStatClosure<V>(metrics0(), start));
@@ -2880,12 +2879,10 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
      * Internal method that is called from {@link CacheEntryImpl}.
      *
      * @param key Key to remove.
-     * @param entry Optional cached entry.
      * @param filter Optional filter.
      * @return Put operation future.
      */
-    public IgniteInternalFuture<V> removeAsync(final K key, @Nullable final GridCacheEntryEx entry,
-        @Nullable final CacheEntryPredicate... filter) {
+    public IgniteInternalFuture<V> removeAsync0(final K key, @Nullable final CacheEntryPredicate... filter) {
         final boolean statsEnabled = ctx.config().isStatisticsEnabled();
 
         final long start = statsEnabled ? System.nanoTime() : 0L;

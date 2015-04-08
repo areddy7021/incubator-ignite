@@ -491,15 +491,13 @@ public class GridDhtAtomicCache<K, V> extends GridDhtCacheAdapter<K, V> {
     }
 
     /** {@inheritDoc} */
-    @Override public V remove(K key, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
-        return removeAsync(key, entry, filter).get();
+    @Override public V remove0(K key) throws IgniteCheckedException {
+        return removeAsync0(key, null).get();
     }
 
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
-    @Override public IgniteInternalFuture<V> removeAsync(K key, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter) {
+    @Override public IgniteInternalFuture<V> removeAsync0(K key, @Nullable CacheEntryPredicate... filter) {
         A.notNull(key, "key");
 
         return removeAllAsync0(Collections.singletonList(key), null, true, false, filter);
