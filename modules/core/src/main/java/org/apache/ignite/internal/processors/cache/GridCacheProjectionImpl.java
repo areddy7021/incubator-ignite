@@ -282,12 +282,6 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     }
 
     /** {@inheritDoc} */
-    @Override public V get(K key, @Nullable GridCacheEntryEx entry, boolean deserializePortable,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
-        return cache.get(key, entry, deserializePortable, filter);
-    }
-
-    /** {@inheritDoc} */
     @Override public IgniteInternalFuture<V> getAsync(K key) {
         return cache.getAsync(key, deserializePortables());
     }

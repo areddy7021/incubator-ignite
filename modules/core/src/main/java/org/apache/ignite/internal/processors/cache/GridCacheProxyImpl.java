@@ -421,19 +421,6 @@ public class GridCacheProxyImpl<K, V> implements GridCacheProxy<K, V>, Externali
     }
 
     /** {@inheritDoc} */
-    @Override public V get(K key, @Nullable GridCacheEntryEx entry, boolean deserializePortable,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
-        GridCacheProjectionImpl<K, V> prev = gate.enter(prj);
-
-        try {
-            return delegate.get(key, entry, deserializePortable, filter);
-        }
-        finally {
-            gate.leave(prev);
-        }
-    }
-
-    /** {@inheritDoc} */
     @Override public IgniteInternalFuture<V> getAsync(K key) {
         GridCacheProjectionImpl<K, V> prev = gate.enter(prj);
 

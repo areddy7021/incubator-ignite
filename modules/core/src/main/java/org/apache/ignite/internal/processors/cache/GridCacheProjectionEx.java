@@ -157,17 +157,6 @@ public interface GridCacheProjectionEx<K, V> extends CacheProjection<K, V> {
     public IgniteInternalFuture<GridCacheReturn> removexAsync(K key, V val);
 
     /**
-     * @param key Key to retrieve the value for.
-     * @param entry Cached entry when called from entry wrapper.
-     * @param filter Filter to check prior to getting the value. Note that filter check
-     *      together with getting the value is an atomic operation.
-     * @return Value.
-     * @throws IgniteCheckedException If failed.
-     */
-    @Nullable public V get(K key, @Nullable GridCacheEntryEx entry, boolean deserializePortable,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException;
-
-    /**
      * Gets value from cache. Will go to primary node even if this is a backup.
      *
      * @param key Key to get value for.

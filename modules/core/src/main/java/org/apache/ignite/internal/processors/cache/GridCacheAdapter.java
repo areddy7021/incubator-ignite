@@ -1301,15 +1301,6 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     }
 
     /** {@inheritDoc} */
-    @Override public V get(K key, @Nullable GridCacheEntryEx entry, boolean deserializePortable,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
-        String taskName = ctx.kernalContext().job().currentTaskName();
-
-        return getAllAsync(F.asList(key), !ctx.config().isReadFromBackup(), /*skip tx*/false, entry, null, taskName,
-            deserializePortable, false).get().get(key);
-    }
-
-    /** {@inheritDoc} */
     @Override public V getForcePrimary(K key) throws IgniteCheckedException {
         String taskName = ctx.kernalContext().job().currentTaskName();
 
