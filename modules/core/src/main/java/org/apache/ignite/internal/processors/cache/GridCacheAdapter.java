@@ -2015,42 +2015,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
 
     /** {@inheritDoc} */
     @Override public V put(K key, V val) throws IgniteCheckedException {
-        return put(key, val, null, CU.empty0());
-    }
-
-    /**
-     * Stores given key-value pair in cache. If filters are provided, then entries will
-     * be stored in cache only if they pass the filter. Note that filter check is atomic,
-     * so value stored in cache is guaranteed to be consistent with the filters. If cache
-     * previously contained value for the given key, then this value is returned.
-     * In case of {@link CacheMode#PARTITIONED} or {@link CacheMode#REPLICATED} caches,
-     * the value will be loaded from the primary node, which in its turn may load the value
-     * from the swap storage, and consecutively, if it's not in swap,
-     * from the underlying persistent storage. If value has to be loaded from persistent
-     * storage,  <code>CacheStore#load(Transaction, Object)</code> method will be used.
-     * <p>
-     * If the returned value is not needed, method <code>#putx(Object, Object, org.apache.ignite.lang.IgnitePredicate[])</code> should
-     * always be used instead of this one to avoid the overhead associated with returning of the previous value.
-     * <p>
-     * If write-through is enabled, the stored value will be persisted to {@link org.apache.ignite.cache.store.CacheStore}
-     * via <code>CacheStore#put(Transaction, Object, Object)</code> method.
-     * <h2 class="header">Transactions</h2>
-     * This method is transactional and will enlist the entry into ongoing transaction
-     * if there is one.
-     *
-     * @param key Key to store in cache.
-     * @param val Value to be associated with the given key.
-     * @param filter Optional filter to check prior to putting value in cache. Note
-     *      that filter check is atomic with put operation.
-     * @return Previous value associated with specified key, or {@code null}
-     *  if entry did not pass the filter, or if there was no mapping for the key in swap
-     *  or in persistent storage.
-     * @throws NullPointerException If either key or value are {@code null}.
-     * @throws IgniteCheckedException If put operation failed.
-     */
-    public V put(K key, V val, @Nullable CacheEntryPredicate... filter)
-        throws IgniteCheckedException {
-        return put(key, val, null, filter);
+        return put(key, val, CU.empty0());
     }
 
     /**
@@ -2058,15 +2023,13 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
      *
      * @param key Key.
      * @param val Value.
-     * @param cached Cached entry. If not provided, equivalent to {CacheProjection#put}.
      * @param filter Optional filter.
      * @return Previous value.
      * @throws IgniteCheckedException If failed.
      */
     @Nullable public V put(final K key,
-        final V val,
-        @Nullable final GridCacheEntryEx cached,
-        @Nullable final CacheEntryPredicate[] filter)
+                           final V val,
+                           @Nullable final CacheEntryPredicate[] filter)
         throws IgniteCheckedException
     {
         boolean statsEnabled = ctx.config().isStatisticsEnabled();
@@ -2082,7 +2045,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
 
         V prevVal = syncOp(new SyncOp<V>(true) {
             @Override public V op(IgniteTxLocalAdapter tx) throws IgniteCheckedException {
-                return (V)tx.putAllAsync(ctx, F.t(key, val), true, cached, filter).get().value();
+                return (V)tx.putAllAsync(ctx, F.t(key, val), true, null, filter).get().value();
             }
 
             @Override public String toString() {
@@ -2102,41 +2065,19 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     }
 
     /**
-     * Asynchronously stores given key-value pair in cache. If filters are provided, then entries will
-     * be stored in cache only if they pass the filter. Note that filter check is atomic,
-     * so value stored in cache is guaranteed to be consistent with the filters. If cache
-     * previously contained value for the given key, then this value is returned. Otherwise,
-     * in case of {@link CacheMode#REPLICATED} caches, the value will be loaded from swap
-     * and, if it's not there, and read-through is allowed, from the underlying
-     * {@link org.apache.ignite.cache.store.CacheStore} storage. In case of {@link CacheMode#PARTITIONED} caches,
-     * the value will be loaded from the primary node, which in its turn may load the value
-     * from the swap storage, and consecutively, if it's not in swap and read-through is allowed,
-     * from the underlying persistent storage. If value has to be loaded from persistent
-     * storage,  <code>CacheStore#load(Transaction, Object)</code> method will be used.
-     * <p>
-     * If the returned value is not needed, method <code>#putx(Object, Object, org.apache.ignite.lang.IgnitePredicate[])</code> should
-     * always be used instead of this one to avoid the overhead associated with returning of the previous value.
-     * <p>
-     * If write-through is enabled, the stored value will be persisted to {@link org.apache.ignite.cache.store.CacheStore}
-     * via <code>CacheStore#put(Transaction, Object, Object)</code> method.
-     * <h2 class="header">Transactions</h2>
-     * This method is transactional and will enlist the entry into ongoing transaction
-     * if there is one.
+     * Internal method that is called from {@link CacheEntryImpl}.
      *
-     * @param key Key to store in cache.
-     * @param val Value to be associated with the given key.
-     * @param filter Optional filter to check prior to putting value in cache. Note
-     *      that filter check is atomic with put operation.
-     * @return Future for the put operation.
-     * @throws NullPointerException If either key or value are {@code null}.
+     * @param key Key.
+     * @param val Value.
+     * @param filter Optional filter.
+     * @return Put operation future.
      */
-    public IgniteInternalFuture<V> putAsync(K key, V val,
-        @Nullable CacheEntryPredicate[] filter) {
+    public IgniteInternalFuture<V> putAsync(final K key, final V val, @Nullable final CacheEntryPredicate... filter) {
         final boolean statsEnabled = ctx.config().isStatisticsEnabled();
 
         final long start = statsEnabled ? System.nanoTime() : 0L;
 
-        IgniteInternalFuture<V> fut = putAsync(key, val, null, filter);
+        IgniteInternalFuture<V> fut = putAsync0(key, val, filter);
 
         if (statsEnabled)
             fut.listen(new UpdatePutAndGetTimeStatClosure<V>(metrics0(), start));
@@ -2149,12 +2090,10 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
      *
      * @param key Key.
      * @param val Value.
-     * @param entry Optional cached entry.
      * @param filter Optional filter.
      * @return Put operation future.
      */
-    public IgniteInternalFuture<V> putAsync(final K key, final V val, @Nullable final GridCacheEntryEx entry,
-        @Nullable final CacheEntryPredicate... filter) {
+    public IgniteInternalFuture<V> putAsync0(final K key, final V val, @Nullable final CacheEntryPredicate... filter) {
         A.notNull(key, "key", val, "val");
 
         if (keyCheck)
@@ -2164,7 +2103,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
 
         return asyncOp(new AsyncOp<V>(key) {
             @Override public IgniteInternalFuture<V> op(IgniteTxLocalAdapter tx) {
-                return tx.putAllAsync(ctx, F.t(key, val), true, entry, filter)
+                return tx.putAllAsync(ctx, F.t(key, val), true, null, filter)
                     .chain((IgniteClosure<IgniteInternalFuture<GridCacheReturn>, V>)RET2VAL);
             }
 

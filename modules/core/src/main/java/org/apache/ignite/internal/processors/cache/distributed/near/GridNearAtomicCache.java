@@ -391,10 +391,9 @@ public class GridNearAtomicCache<K, V> extends GridNearCacheAdapter<K, V> {
     @Override public V put(
         K key,
         V val,
-        @Nullable GridCacheEntryEx cached,
         @Nullable CacheEntryPredicate[] filter
     ) throws IgniteCheckedException {
-        return dht.put(key, val, cached, filter);
+        return dht.put(key, val, filter);
     }
 
     /** {@inheritDoc} */
@@ -406,11 +405,8 @@ public class GridNearAtomicCache<K, V> extends GridNearCacheAdapter<K, V> {
 
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
-    @Override public IgniteInternalFuture<V> putAsync(K key,
-        V val,
-        @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter) {
-        return dht.putAsync(key, val, entry, filter);
+    @Override public IgniteInternalFuture<V> putAsync0(K key, V val, @Nullable CacheEntryPredicate... filter) {
+        return dht.putAsync(key, val, filter);
     }
 
     /** {@inheritDoc} */

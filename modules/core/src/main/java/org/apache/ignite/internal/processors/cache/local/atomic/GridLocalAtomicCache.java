@@ -101,9 +101,8 @@ public class GridLocalAtomicCache<K, V> extends GridCacheAdapter<K, V> {
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override public V put(K key,
-        V val,
-        @Nullable GridCacheEntryEx cached,
-        @Nullable CacheEntryPredicate[] filter) throws IgniteCheckedException {
+                           V val,
+                           @Nullable CacheEntryPredicate[] filter) throws IgniteCheckedException {
         A.notNull(key, "key", val, "val");
 
         return (V)updateAllInternal(UPDATE,
@@ -141,10 +140,7 @@ public class GridLocalAtomicCache<K, V> extends GridCacheAdapter<K, V> {
 
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
-    @Override public IgniteInternalFuture<V> putAsync(K key,
-        V val,
-        @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter) {
+    @Override public IgniteInternalFuture<V> putAsync0(K key, V val, @Nullable CacheEntryPredicate... filter) {
         A.notNull(key, "key", val, "val");
 
         return updateAllAsync0(F0.asMap(key, val),

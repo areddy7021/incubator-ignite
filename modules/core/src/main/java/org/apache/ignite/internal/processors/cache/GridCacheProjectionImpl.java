@@ -426,7 +426,7 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
 
     /** {@inheritDoc} */
     @Override public IgniteInternalFuture<V> putIfAbsentAsync(K key, V val) {
-        return cache.putAsync(key, val, null, cctx.noValArray());
+        return cache.putAsync(key, val, cctx.noValArray());
     }
 
     /** {@inheritDoc} */
@@ -446,7 +446,7 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
 
     /** {@inheritDoc} */
     @Override public IgniteInternalFuture<V> replaceAsync(K key, V val) {
-        return cache.putAsync(key, val, null, cctx.hasValArray());
+        return cache.putAsync(key, val, cctx.hasValArray());
     }
 
     /** {@inheritDoc} */
