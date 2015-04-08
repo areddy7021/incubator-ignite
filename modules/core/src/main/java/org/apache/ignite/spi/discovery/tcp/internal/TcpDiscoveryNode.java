@@ -20,6 +20,7 @@ package org.apache.ignite.spi.discovery.tcp.internal;
 import org.apache.ignite.cache.*;
 import org.apache.ignite.cluster.*;
 import org.apache.ignite.internal.*;
+import org.apache.ignite.internal.processors.cache.*;
 import org.apache.ignite.internal.util.lang.*;
 import org.apache.ignite.internal.util.tostring.*;
 import org.apache.ignite.internal.util.typedef.*;
@@ -197,12 +198,15 @@ public class TcpDiscoveryNode extends GridMetadataAwareAdapter implements Cluste
 
     /** {@inheritDoc} */
     @Override public ClusterMetrics metrics() {
-        ClusterMetrics metrics0 = null;
+        if (metricsProvider != null) {
+            ClusterMetrics metrics0 = metricsProvider.metrics();
 
-        if (metricsProvider != null)
-            metrics = metrics0 = metricsProvider.metrics();
+            metrics = metrics0;
 
-        return metrics0 == null ? metrics : metrics0;
+            return metrics0;
+        }
+
+        return metrics;
     }
 
     /**
@@ -227,12 +231,15 @@ public class TcpDiscoveryNode extends GridMetadataAwareAdapter implements Cluste
      * @return Runtime metrics snapshots for this node.
      */
     public Map<Integer, CacheMetrics> cacheMetrics() {
-        Map<Integer, CacheMetrics> cacheMetrics0 = null;
+        if (metricsProvider != null) {
+            Map<Integer, CacheMetrics> cacheMetrics0 = metricsProvider.cacheMetrics();
 
-        if (metricsProvider != null)
-            cacheMetrics = cacheMetrics0 = metricsProvider.cacheMetrics();
+            cacheMetrics = cacheMetrics0;
 
-        return cacheMetrics0 == null ? cacheMetrics : cacheMetrics0;
+            return cacheMetrics0;
+        }
+
+        return cacheMetrics;
     }
 
     /**
@@ -434,7 +441,10 @@ public class TcpDiscoveryNode extends GridMetadataAwareAdapter implements Cluste
         U.writeCollection(out, hostNames);
         out.writeInt(discPort);
 
+        // Cluster metrics
         byte[] mtr = null;
+
+        ClusterMetrics metrics = this.metrics;
 
         if (metrics != null) {
             mtr = new byte[ClusterMetricsSnapshot.METRICS_SIZE];
@@ -443,6 +453,15 @@ public class TcpDiscoveryNode extends GridMetadataAwareAdapter implements Cluste
         }
 
         U.writeByteArray(out, mtr);
+
+        // Cache metrics
+        Map<Integer, CacheMetrics> cacheMetrics = this.cacheMetrics;
+
+        out.writeInt(cacheMetrics == null ? 0 : cacheMetrics.size());
+
+        if (!F.isEmpty(cacheMetrics))
+            for (Map.Entry<Integer, CacheMetrics> m : cacheMetrics.entrySet())
+                out.writeObject(m.getValue());
 
         out.writeLong(order);
         out.writeLong(intOrder);
@@ -463,10 +482,23 @@ public class TcpDiscoveryNode extends GridMetadataAwareAdapter implements Cluste
 
         consistentId = U.consistentId(addrs, discPort);
 
+        // Cluster metrics
         byte[] mtr = U.readByteArray(in);
 
         if (mtr != null)
             metrics = ClusterMetricsSnapshot.deserialize(mtr, 0);
+
+        // Cache metrics
+        int size = in.readInt();
+
+        Map<Integer, CacheMetrics> cacheMetrics =
+            size > 0 ? U.<Integer, CacheMetrics>newHashMap(size) : Collections.<Integer, CacheMetrics>emptyMap();
+
+        for (int i = 0; i < size; i++) {
+            CacheMetricsSnapshot m = (CacheMetricsSnapshot) in.readObject();
+
+            cacheMetrics.put(m.id(), m);
+        }
 
         order = in.readLong();
         intOrder = in.readLong();

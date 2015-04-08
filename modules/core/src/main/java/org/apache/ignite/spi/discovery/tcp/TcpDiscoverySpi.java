@@ -5189,7 +5189,7 @@ public class TcpDiscoverySpi extends TcpDiscoverySpiAdapter implements TcpDiscov
      * @param msg Message.
      * @param nodeId Node ID.
      */
-    private void removeMetrics(TcpDiscoveryHeartbeatMessage msg, UUID nodeId) {
+    private static void removeMetrics(TcpDiscoveryHeartbeatMessage msg, UUID nodeId) {
         msg.removeMetrics(nodeId);
         msg.removeCacheMetrics(nodeId);
     }

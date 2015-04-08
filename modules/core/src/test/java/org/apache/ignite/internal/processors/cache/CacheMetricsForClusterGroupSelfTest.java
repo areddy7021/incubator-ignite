@@ -21,11 +21,15 @@ import org.apache.ignite.*;
 import org.apache.ignite.cache.*;
 import org.apache.ignite.cluster.*;
 import org.apache.ignite.configuration.*;
+import org.apache.ignite.events.*;
 import org.apache.ignite.lang.*;
 import org.apache.ignite.spi.discovery.tcp.internal.*;
 import org.apache.ignite.testframework.junits.common.*;
 
 import java.util.*;
+import java.util.concurrent.*;
+
+import static org.apache.ignite.events.EventType.*;
 
 /**
  * Test for cluster wide cache metrics.
@@ -46,13 +50,17 @@ public class CacheMetricsForClusterGroupSelfTest extends GridCommonAbstractTest 
     /** Entry count cache 2. */
     private static final int ENTRY_CNT_CACHE2 = 500;
 
+    private IgniteCache<Integer, Integer> cache1;
+
+    private IgniteCache<Integer, Integer> cache2;
+
     /** {@inheritDoc} */
-    @Override protected void beforeTest() throws Exception {
+    @Override protected void beforeTestsStarted() throws Exception {
         startGrids(GRID_CNT);
     }
 
     /** {@inheritDoc} */
-    @Override protected void afterTest() throws Exception {
+    @Override protected void afterTestsStopped() throws Exception {
         stopAllGrids();
     }
 
@@ -62,14 +70,13 @@ public class CacheMetricsForClusterGroupSelfTest extends GridCommonAbstractTest 
     public void testMetricsStatisticsEnabled() throws Exception {
         createCaches(true);
 
-        populateCacheData(CACHE1, ENTRY_CNT_CACHE1);
-        populateCacheData(CACHE2, ENTRY_CNT_CACHE2);
+        populateCacheData(cache1, ENTRY_CNT_CACHE1);
+        populateCacheData(cache2, ENTRY_CNT_CACHE2);
 
-        readCacheData(CACHE1, ENTRY_CNT_CACHE1);
-        readCacheData(CACHE2, ENTRY_CNT_CACHE2);
+        readCacheData(cache1, ENTRY_CNT_CACHE1);
+        readCacheData(cache2, ENTRY_CNT_CACHE2);
 
-        // Wait for heartbeat message
-        Thread.sleep(3000);
+        awaitMetricsUpdate();
 
         Collection<ClusterNode> nodes = grid(0).cluster().forRemotes().nodes();
 
@@ -79,8 +86,10 @@ public class CacheMetricsForClusterGroupSelfTest extends GridCommonAbstractTest 
             assertFalse(metrics.isEmpty());
         }
 
-        assertMetrics(CACHE1);
-        assertMetrics(CACHE2);
+        assertMetrics(cache1);
+        assertMetrics(cache2);
+
+        closeCaches();
     }
 
     /**
@@ -89,14 +98,13 @@ public class CacheMetricsForClusterGroupSelfTest extends GridCommonAbstractTest 
     public void testMetricsStatisticsDisabled() throws Exception {
         createCaches(false);
 
-        populateCacheData(CACHE1, ENTRY_CNT_CACHE1);
-        populateCacheData(CACHE2, ENTRY_CNT_CACHE2);
+        populateCacheData(cache1, ENTRY_CNT_CACHE1);
+        populateCacheData(cache2, ENTRY_CNT_CACHE2);
 
-        readCacheData(CACHE1, ENTRY_CNT_CACHE1);
-        readCacheData(CACHE2, ENTRY_CNT_CACHE2);
+        readCacheData(cache1, ENTRY_CNT_CACHE1);
+        readCacheData(cache2, ENTRY_CNT_CACHE2);
 
-        // Wait for heartbeat message
-        Thread.sleep(3000);
+        awaitMetricsUpdate();
 
         Collection<ClusterNode> nodes = grid(0).cluster().forRemotes().nodes();
 
@@ -105,6 +113,8 @@ public class CacheMetricsForClusterGroupSelfTest extends GridCommonAbstractTest 
             assertNotNull(metrics);
             assertTrue(metrics.isEmpty());
         }
+
+        closeCaches();
     }
 
     /**
@@ -119,68 +129,94 @@ public class CacheMetricsForClusterGroupSelfTest extends GridCommonAbstractTest 
         ccfg2.setName(CACHE2);
         ccfg2.setStatisticsEnabled(statisticsEnabled);
 
-        grid(0).getOrCreateCache(ccfg1);
-        grid(0).getOrCreateCache(ccfg2);
+        cache1 = grid(0).getOrCreateCache(ccfg1);
+        cache2 = grid(0).getOrCreateCache(ccfg2);
     }
 
     /**
-     * @param name Name.
+     * Closes caches.
+     */
+    private void closeCaches() {
+        cache1.close();
+        cache2.close();
+    }
+
+    /**
+     * Wait for {@link EventType#EVT_NODE_METRICS_UPDATED} event will be receieved.
+     */
+    private void awaitMetricsUpdate() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(GRID_CNT * 2);
+
+        IgnitePredicate<Event> lsnr = new IgnitePredicate<Event>() {
+            @Override public boolean apply(Event ignore) {
+                latch.countDown();
+
+                return true;
+            }
+        };
+
+        for (int i = 0; i < GRID_CNT; i++)
+            grid(i).events().localListen(lsnr, EVT_NODE_METRICS_UPDATED);
+
+        latch.await();
+    }
+
+    /**
+     * @param cache Cache.
      * @param cnt Count.
      */
-    private void populateCacheData(String name, int cnt) {
-        IgniteCache<Integer, Integer> cache = grid(0).cache(name);
-
+    private void populateCacheData(IgniteCache<Integer, Integer> cache, int cnt) {
         for (int i = 0; i < cnt; i++)
             cache.put(i, i);
     }
 
     /**
-     * @param name Name.
+     * @param cache Cache.
      * @param cnt Count.
      */
-    private void readCacheData(String name, int cnt) {
-        IgniteCache<Integer, Integer> cache = grid(0).cache(name);
-
+    private void readCacheData(IgniteCache<Integer, Integer> cache, int cnt) {
         for (int i = 0; i < cnt; i++)
             cache.get(i);
     }
 
     /**
-     * @param name Name.
+     * @param cache Cache.
      */
-    private void assertMetrics(String name) {
-        CacheMetrics metrics = grid(0).cache(name).metrics(grid(0).cluster().forCacheNodes(name));
-
+    private void assertMetrics(IgniteCache<Integer, Integer> cache) {
         CacheMetrics[] ms = new CacheMetrics[GRID_CNT];
 
-        for (int i = 0; i < GRID_CNT; i++)
-            ms[i] = grid(i).cache(name).metrics();
+        for (int i = 0; i < GRID_CNT; i++) {
+            CacheMetrics metrics = cache.metrics(grid(i).cluster().forCacheNodes(cache.getName()));
 
-        // Static metrics
-        for (int i = 0; i < GRID_CNT; i++)
-            assertEquals(metrics.id(), ms[i].id());
+            for (int j = 0; j < GRID_CNT; j++)
+                ms[j] = grid(j).cache(cache.getName()).metrics();
 
-        for (int i = 0; i < GRID_CNT; i++)
-            assertEquals(metrics.name(), ms[i].name());
+            // Static metrics
+            for (int j = 0; j < GRID_CNT; j++)
+                assertEquals(metrics.id(), ms[j].id());
 
-        // Dynamic metrics
-        assertEquals(metrics.getCacheGets(), sum(ms, new IgniteClosure<CacheMetrics, Long>() {
-            @Override public Long apply(CacheMetrics input) {
-                return input.getCacheGets();
-            }
-        }));
+            for (int j = 0; j < GRID_CNT; j++)
+                assertEquals(metrics.name(), ms[j].name());
 
-        assertEquals(metrics.getCachePuts(), sum(ms, new IgniteClosure<CacheMetrics, Long>() {
-            @Override public Long apply(CacheMetrics input) {
-                return input.getCachePuts();
-            }
-        }));
+            // Dynamic metrics
+            assertEquals(metrics.getCacheGets(), sum(ms, new IgniteClosure<CacheMetrics, Long>() {
+                @Override public Long apply(CacheMetrics input) {
+                    return input.getCacheGets();
+                }
+            }));
 
-        assertEquals(metrics.getCacheHits(), sum(ms, new IgniteClosure<CacheMetrics, Long>() {
-            @Override public Long apply(CacheMetrics input) {
-                return input.getCacheHits();
-            }
-        }));
+            assertEquals(metrics.getCachePuts(), sum(ms, new IgniteClosure<CacheMetrics, Long>() {
+                @Override public Long apply(CacheMetrics input) {
+                    return input.getCachePuts();
+                }
+            }));
+
+            assertEquals(metrics.getCacheHits(), sum(ms, new IgniteClosure<CacheMetrics, Long>() {
+                @Override public Long apply(CacheMetrics input) {
+                    return input.getCacheHits();
+                }
+            }));
+        }
     }
 
     /**
