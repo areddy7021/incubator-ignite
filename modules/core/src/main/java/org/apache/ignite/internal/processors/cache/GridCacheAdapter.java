@@ -2435,7 +2435,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
 
         final long start = statsEnabled ? System.nanoTime() : 0L;
 
-        IgniteInternalFuture<Boolean> fut = putxAsync(key, val, null, filter);
+        IgniteInternalFuture<Boolean> fut = putxAsync0(key, val, filter);
 
         if (statsEnabled)
             fut.listen(new UpdatePutTimeStatClosure<Boolean>(metrics0(), start));
@@ -2448,13 +2448,11 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
      *
      * @param key Key.
      * @param val Value.
-     * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
      * @param filter Optional filter.
      * @return Putx operation future.
      */
-    public IgniteInternalFuture<Boolean> putxAsync(final K key, final V val,
-        @Nullable final GridCacheEntryEx entry,
-        @Nullable final CacheEntryPredicate... filter) {
+    public IgniteInternalFuture<Boolean> putxAsync0(final K key, final V val,
+                                                    @Nullable final CacheEntryPredicate... filter) {
         A.notNull(key, "key", val, "val");
 
         if (keyCheck)
@@ -2464,7 +2462,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
 
         return asyncOp(new AsyncOp<Boolean>(key) {
             @Override public IgniteInternalFuture<Boolean> op(IgniteTxLocalAdapter tx) {
-                return tx.putAllAsync(ctx, F.t(key, val), false, entry, filter).chain(
+                return tx.putAllAsync(ctx, F.t(key, val), false, null, filter).chain(
                     (IgniteClosure<IgniteInternalFuture<GridCacheReturn>, Boolean>) RET2FLAG);
             }
 
@@ -2964,7 +2962,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
 
         long start = statsEnabled ? System.nanoTime() : 0L;
 
-        boolean rmv = removex(key, null, null);
+        boolean rmv = removex0(key, null, null);
 
         if (statsEnabled && rmv)
             metrics0().addRemoveTimeNanos(System.nanoTime() - start);
@@ -2976,13 +2974,11 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
      * Internal method that is called from {@link CacheEntryImpl}.
      *
      * @param key Key to remove.
-     * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
      * @param filter Optional filter.
      * @return Previous value.
      * @throws IgniteCheckedException If failed.
      */
-    public boolean removex(final K key, @Nullable final GridCacheEntryEx entry,
-        @Nullable final CacheEntryPredicate... filter) throws IgniteCheckedException {
+    public boolean removex0(final K key, @Nullable final CacheEntryPredicate... filter) throws IgniteCheckedException {
         boolean statsEnabled = ctx.config().isStatisticsEnabled();
 
         long start = statsEnabled ? System.nanoTime() : 0L;
@@ -2994,7 +2990,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
 
         boolean rmv = syncOp(new SyncOp<Boolean>(true) {
             @Override public Boolean op(IgniteTxLocalAdapter tx) throws IgniteCheckedException {
-                return tx.removeAllAsync(ctx, Collections.singletonList(key), entry, false, filter).get().success();
+                return tx.removeAllAsync(ctx, Collections.singletonList(key), null, false, filter).get().success();
             }
 
             @Override public String toString() {
@@ -3012,7 +3008,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     @Override public IgniteInternalFuture<Boolean> removexAsync(K key) {
         A.notNull(key, "key");
 
-        return removexAsync(key, null, CU.empty0());
+        return removexAsync0(key, CU.empty0());
     }
 
 
@@ -3039,19 +3035,17 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     public IgniteInternalFuture<Boolean> removexAsync(K key, CacheEntryPredicate... filter) {
         A.notNull(key, "key");
 
-        return removexAsync(key, null, filter);
+        return removexAsync0(key, filter);
     }
 
     /**
      * Internal method that is called from {@link CacheEntryImpl}.
      *
      * @param key Key to remove.
-     * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
      * @param filter Optional filter.
      * @return Putx operation future.
      */
-    public IgniteInternalFuture<Boolean> removexAsync(final K key, @Nullable final GridCacheEntryEx entry,
-        @Nullable final CacheEntryPredicate... filter) {
+    public IgniteInternalFuture<Boolean> removexAsync0(final K key, @Nullable final CacheEntryPredicate... filter) {
         final boolean statsEnabled = ctx.config().isStatisticsEnabled();
 
         final long start = statsEnabled ? System.nanoTime() : 0L;
@@ -3063,7 +3057,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
 
         IgniteInternalFuture<Boolean> fut = asyncOp(new AsyncOp<Boolean>(key) {
             @Override public IgniteInternalFuture<Boolean> op(IgniteTxLocalAdapter tx) {
-                return tx.removeAllAsync(ctx, Collections.singletonList(key), entry, false, filter).chain(
+                return tx.removeAllAsync(ctx, Collections.singletonList(key), null, false, filter).chain(
                     (IgniteClosure<IgniteInternalFuture<GridCacheReturn>, Boolean>)RET2FLAG);
             }
 
