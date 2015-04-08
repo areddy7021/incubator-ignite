@@ -1704,7 +1704,6 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
 
         return getAllAsync(keys,
                 true,
-                entry,
                 !skipTx,
                 subjId,
                 taskName,
@@ -1717,7 +1716,6 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
     /**
      * @param keys Keys.
      * @param readThrough Read through.
-     * @param cached Cached.
      * @param checkTx Check tx.
      * @param subjId Subj Id.
      * @param taskName Task name.
@@ -1730,7 +1728,6 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
      */
     public IgniteInternalFuture<Map<K, V>> getAllAsync(@Nullable final Collection<? extends K> keys,
         boolean readThrough,
-        @Nullable GridCacheEntryEx cached,
         boolean checkTx,
         @Nullable final UUID subjId,
         final String taskName,

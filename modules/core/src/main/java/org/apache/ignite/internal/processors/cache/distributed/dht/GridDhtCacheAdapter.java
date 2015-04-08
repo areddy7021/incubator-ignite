@@ -520,7 +520,6 @@ public abstract class GridDhtCacheAdapter<K, V> extends GridDistributedCacheAdap
     ) {
         return getAllAsync(keys,
             true,
-            null,
             /*don't check local tx. */false,
             subjId,
             taskName,
