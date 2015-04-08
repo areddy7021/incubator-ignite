@@ -1710,7 +1710,6 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
      * @param subjId Subj Id.
      * @param taskName Task name.
      * @param deserializePortable Deserialize portable.
-     * @param forcePrimary Froce primary.
      * @param expiry Expiry policy.
      * @param skipVals Skip values.
      * @return Future for the get operation.
