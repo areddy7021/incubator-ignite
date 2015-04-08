@@ -38,10 +38,10 @@ public class CacheMetricsForClusterGroupSelfTest extends GridCommonAbstractTest 
     /** Grid count. */
     private static final int GRID_CNT = 3;
 
-    /** Cache 1. */
+    /** Cache 1 name. */
     private static final String CACHE1 = "cache1";
 
-    /** Cache 2. */
+    /** Cache 2 name. */
     private static final String CACHE2 = "cache2";
 
     /** Entry count cache 1. */
@@ -50,8 +50,10 @@ public class CacheMetricsForClusterGroupSelfTest extends GridCommonAbstractTest 
     /** Entry count cache 2. */
     private static final int ENTRY_CNT_CACHE2 = 500;
 
+    /** Cache 1. */
     private IgniteCache<Integer, Integer> cache1;
 
+    /** Cache 2. */
     private IgniteCache<Integer, Integer> cache2;
 
     /** {@inheritDoc} */
@@ -113,6 +115,9 @@ public class CacheMetricsForClusterGroupSelfTest extends GridCommonAbstractTest 
             assertNotNull(metrics);
             assertTrue(metrics.isEmpty());
         }
+
+        assertMetrics(cache1);
+        assertMetrics(cache2);
 
         closeCaches();
     }
