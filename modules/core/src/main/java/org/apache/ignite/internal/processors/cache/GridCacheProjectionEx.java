@@ -43,56 +43,6 @@ public interface GridCacheProjectionEx<K, V> extends CacheProjection<K, V> {
     GridCacheProjectionEx<K, V> forSubjectId(UUID subjId);
 
     /**
-     * Internal method that is called from {@link CacheEntryImpl}.
-     *
-     * @param key Key.
-     * @param val Value.
-     * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
-     * @param filter Optional filter.
-     * @return Previous value.
-     * @throws IgniteCheckedException If failed.
-     */
-    @Nullable public V put(K key, V val, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException;
-
-    /**
-     * Internal method that is called from {@link CacheEntryImpl}.
-     *
-     * @param key Key.
-     * @param val Value.
-     * @param entry Optional cached entry.
-     * @param filter Optional filter.
-     * @return Put operation future.
-     */
-    public IgniteInternalFuture<V> putAsync(K key, V val, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter);
-
-    /**
-     * Internal method that is called from {@link CacheEntryImpl}.
-     *
-     * @param key Key.
-     * @param val Value.
-     * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
-     * @param filter Optional filter.
-     * @return Previous value.
-     * @throws IgniteCheckedException If failed.
-     */
-    public boolean putx(K key, V val, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException;
-
-    /**
-     * Internal method that is called from {@link CacheEntryImpl}.
-     *
-     * @param key Key.
-     * @param val Value.
-     * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
-     * @param filter Optional filter.
-     * @return Putx operation future.
-     */
-    public IgniteInternalFuture<Boolean> putxAsync(K key, V val, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter);
-
-    /**
      * Store DR data.
      *
      * @param drMap DR map.
@@ -111,29 +61,6 @@ public interface GridCacheProjectionEx<K, V> extends CacheProjection<K, V> {
         throws IgniteCheckedException;
 
     /**
-     * Internal method that is called from {@link CacheEntryImpl}.
-     *
-     * @param key Key to remove.
-     * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
-     * @param filter Optional filter.
-     * @return Previous value.
-     * @throws IgniteCheckedException If failed.
-     */
-    @Nullable public V remove(K key, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException;
-
-    /**
-     * Internal method that is called from {@link CacheEntryImpl}.
-     *
-     * @param key Key to remove.
-     * @param entry Optional cached entry.
-     * @param filter Optional filter.
-     * @return Put operation future.
-     */
-    public IgniteInternalFuture<V> removeAsync(K key, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter);
-
-    /**
      * Removes DR data.
      *
      * @param drMap DR map.
@@ -149,29 +76,6 @@ public interface GridCacheProjectionEx<K, V> extends CacheProjection<K, V> {
      * @throws IgniteCheckedException If remove failed.
      */
     public IgniteInternalFuture<?> removeAllConflictAsync(Map<KeyCacheObject, GridCacheVersion> drMap) throws IgniteCheckedException;
-
-    /**
-     * Internal method that is called from {@link CacheEntryImpl}.
-     *
-     * @param key Key to remove.
-     * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
-     * @param filter Optional filter.
-     * @return Previous value.
-     * @throws IgniteCheckedException If failed.
-     */
-    public boolean removex(K key, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException;
-
-    /**
-     * Internal method that is called from {@link CacheEntryImpl}.
-     *
-     * @param key Key to remove.
-     * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
-     * @param filter Optional filter.
-     * @return Putx operation future.
-     */
-    public IgniteInternalFuture<Boolean> removexAsync(K key, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter);
 
     /**
      * Asynchronously stores given key-value pair in cache only if only if the previous value is equal to the

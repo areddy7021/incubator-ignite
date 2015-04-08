@@ -26,7 +26,6 @@ import org.apache.ignite.internal.processors.cache.query.*;
 import org.apache.ignite.internal.processors.cache.transactions.*;
 import org.apache.ignite.internal.processors.cache.version.*;
 import org.apache.ignite.internal.util.tostring.*;
-import org.apache.ignite.internal.util.typedef.*;
 import org.apache.ignite.internal.util.typedef.internal.*;
 import org.apache.ignite.lang.*;
 import org.apache.ignite.transactions.*;
@@ -350,32 +349,12 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
 
     /** {@inheritDoc} */
     @Override public V put(K key, V val) throws IgniteCheckedException {
-        return putAsync(key, val, null, CU.empty0()).get();
-    }
-
-    /** {@inheritDoc} */
-    @Override public V put(K key, V val, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
-        return cache.put(key, val, entry, filter);
+        return cache.put(key, val);
     }
 
     /** {@inheritDoc} */
     @Override public IgniteInternalFuture<V> putAsync(K key, V val) {
-        return putAsync(key, val, null, null);
-    }
-
-    /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<V> putAsync(K key, V val, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate[] filter) {
-        A.notNull(key, "key", val, "val");
-
-        return cache.putAsync(key, val, entry, filter);
-    }
-
-    /** {@inheritDoc} */
-    @Override public boolean putx(K key, V val, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
-        return cache.putx(key, val, entry, filter);
+        return cache.putAsync(key, val);
     }
 
     /** {@inheritDoc} */
@@ -437,15 +416,7 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
 
     /** {@inheritDoc} */
     @Override public IgniteInternalFuture<Boolean> putxAsync(K key, V val) {
-        return putxAsync(key, val, null, null);
-    }
-
-    /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<Boolean> putxAsync(K key, V val, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate[] filter) {
-        A.notNull(key, "key", val, "val");
-
-        return cache.putxAsync(key, val, entry, filter);
+        return cache.putxAsync(key, val);
     }
 
     /** {@inheritDoc} */
@@ -573,7 +544,7 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
 
     /** {@inheritDoc} */
     @Nullable @Override public V localPeek(K key,
-        CachePeekMode[] peekModes,
+                                           CachePeekMode[] peekModes,
         @Nullable IgniteCacheExpiryPolicy plc)
         throws IgniteCheckedException
     {
@@ -661,20 +632,8 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     }
 
     /** {@inheritDoc} */
-    @Override public V remove(K key, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
-        return removeAsync(key, entry, filter).get();
-    }
-
-    /** {@inheritDoc} */
     @Override public IgniteInternalFuture<V> removeAsync(K key) {
-        return removeAsync(key, null, CU.empty0());
-    }
-
-    /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<V> removeAsync(K key, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter) {
-        return cache.removeAsync(key, entry, filter);
+        return cache.removeAsync(key);
     }
 
     /** {@inheritDoc} */
@@ -694,20 +653,8 @@ public class GridCacheProjectionImpl<K, V> implements GridCacheProjectionEx<K, V
     }
 
     /** {@inheritDoc} */
-    @Override public boolean removex(K key, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
-        return removexAsync(key, entry, filter).get();
-    }
-
-    /** {@inheritDoc} */
     @Override public IgniteInternalFuture<Boolean> removexAsync(K key) {
-        return removexAsync(key, null, CU.empty0());
-    }
-
-    /** {@inheritDoc} */
-    @Override public IgniteInternalFuture<Boolean> removexAsync(K key, @Nullable GridCacheEntryEx entry,
-        @Nullable CacheEntryPredicate... filter) {
-        return cache.removexAsync(key, entry, filter);
+        return cache.removexAsync(key);
     }
 
     /** {@inheritDoc} */
