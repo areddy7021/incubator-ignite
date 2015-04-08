@@ -1699,7 +1699,6 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
                 subjId,
                 taskName,
                 deserializePortable,
-                forcePrimary,
                 skipVals ? null : expiryPolicy(prj != null ? prj.expiry() : null),
                 skipVals);
     }
@@ -1723,7 +1722,6 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
         @Nullable final UUID subjId,
         final String taskName,
         final boolean deserializePortable,
-        final boolean forcePrimary,
         @Nullable IgniteCacheExpiryPolicy expiry,
         final boolean skipVals
     ) {

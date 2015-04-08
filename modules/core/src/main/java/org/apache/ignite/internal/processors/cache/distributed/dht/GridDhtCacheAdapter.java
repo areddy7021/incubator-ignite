@@ -524,7 +524,6 @@ public abstract class GridDhtCacheAdapter<K, V> extends GridDistributedCacheAdap
             subjId,
             taskName,
             deserializePortable,
-            forcePrimary,
             null,
             skipVals);
     }

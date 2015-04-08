@@ -560,7 +560,7 @@ public class GridLocalAtomicCache<K, V> extends GridCacheAdapter<K, V> {
         if (success || !storeEnabled)
             return vals;
 
-        return getAllAsync(keys, true, false, subjId, taskName, deserializePortable, false, expiry, skipVals)
+        return getAllAsync(keys, true, false, subjId, taskName, deserializePortable, expiry, skipVals)
             .get();
     }
 
