@@ -118,25 +118,6 @@ public class GridLocalAtomicCache<K, V> extends GridCacheAdapter<K, V> {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override public boolean putx(K key,
-        V val,
-        @Nullable GridCacheEntryEx cached,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
-        A.notNull(key, "key", val, "val");
-
-        return (Boolean)updateAllInternal(UPDATE,
-            Collections.singleton(key),
-            Collections.singleton(val),
-            null,
-            expiryPerCall(),
-            false,
-            false,
-            filter,
-            ctx.writeThrough());
-    }
-
-    /** {@inheritDoc} */
     @Override public boolean putx(K key, V val) throws IgniteCheckedException {
         return putx(key, val, null);
     }

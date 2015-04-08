@@ -2096,36 +2096,6 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
         return prevVal;
     }
 
-    /**
-     * Internal method that is called from {@link CacheEntryImpl}.
-     *
-     * @param key Key.
-     * @param val Value.
-     * @param cached Cached entry. If not provided, equivalent to {CacheProjection#put}.
-     * @param filter Optional filter.
-     * @return Previous value.
-     * @throws IgniteCheckedException If failed.
-     */
-    public boolean putx(final K key, final V val, @Nullable final GridCacheEntryEx cached,
-        @Nullable final CacheEntryPredicate... filter) throws IgniteCheckedException {
-        A.notNull(key, "key", val, "val");
-
-        if (keyCheck)
-            validateCacheKey(key);
-
-        validateCacheValue(val);
-
-        return syncOp(new SyncOp<Boolean>(true) {
-            @Override public Boolean op(IgniteTxLocalAdapter tx) throws IgniteCheckedException {
-                return tx.putAllAsync(ctx, F.t(key, val), false, cached, filter).get().success();
-            }
-
-            @Override public String toString() {
-                return "put [key=" + key + ", val=" + val + ", filter=" + Arrays.toString(filter) + ']';
-            }
-        });
-    }
-
     /** {@inheritDoc} */
     @Override public IgniteInternalFuture<V> putAsync(K key, V val) {
         return putAsync(key, val, null);

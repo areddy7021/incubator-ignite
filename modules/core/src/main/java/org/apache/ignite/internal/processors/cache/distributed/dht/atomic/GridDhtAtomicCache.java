@@ -307,12 +307,6 @@ public class GridDhtAtomicCache<K, V> extends GridDhtCacheAdapter<K, V> {
     }
 
     /** {@inheritDoc} */
-    @Override public boolean putx(K key, V val, @Nullable GridCacheEntryEx cached,
-        @Nullable CacheEntryPredicate... filter) throws IgniteCheckedException {
-        return putxAsync(key, val, cached, filter).get();
-    }
-
-    /** {@inheritDoc} */
     @Override public boolean putx(K key, V val,
         CacheEntryPredicate[] filter) throws IgniteCheckedException {
         return putxAsync(key, val, filter).get();
