@@ -3467,17 +3467,18 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
                     ctx.store().loadCache(c, args);
 
                     c.onDone();
-                } finally {
+                }
+                finally {
                     ldr.closeEx(false);
                 }
-            } else {
+            }
+            else {
                 // Version for all loaded entries.
                 final GridCacheVersion ver0 = ctx.versions().nextForLoad();
 
                 ctx.store().loadCache(new CIX3<KeyCacheObject, Object, GridCacheVersion>() {
-                    @Override
-                    public void applyx(KeyCacheObject key, Object val, @Nullable GridCacheVersion ver)
-                            throws IgniteException {
+                    @Override public void applyx(KeyCacheObject key, Object val, @Nullable GridCacheVersion ver)
+                        throws IgniteException {
                         assert ver == null;
 
                         long ttl = CU.ttlForLoad(plc);
