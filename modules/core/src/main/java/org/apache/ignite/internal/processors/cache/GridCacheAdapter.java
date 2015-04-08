@@ -2058,7 +2058,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
      *
      * @param key Key.
      * @param val Value.
-     * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
+     * @param cached Cached entry. If not provided, equivalent to {CacheProjection#put}.
      * @param filter Optional filter.
      * @return Previous value.
      * @throws IgniteCheckedException If failed.
@@ -2101,7 +2101,7 @@ public abstract class GridCacheAdapter<K, V> implements GridCache<K, V>,
      *
      * @param key Key.
      * @param val Value.
-     * @param entry Cached entry. If not provided, equivalent to {CacheProjection#put}.
+     * @param cached Cached entry. If not provided, equivalent to {CacheProjection#put}.
      * @param filter Optional filter.
      * @return Previous value.
      * @throws IgniteCheckedException If failed.
