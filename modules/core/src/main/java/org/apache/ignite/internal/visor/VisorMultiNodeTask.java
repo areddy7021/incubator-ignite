@@ -36,7 +36,7 @@ import static org.apache.ignite.internal.visor.util.VisorTaskUtils.*;
  * @param <R> Task result type.
  * @param <J> Job result type
  */
-public abstract class VisorMultiNodeTask<A, R, J> implements ComputeTask<VisorTaskArgument<A>, R> {
+public abstract class VisorMultiNodeTask<A, R, J> implements ComputeTask<VisorTaskArgument<A>, VisorTaskResult<R>> {
     /** Auto-injected grid instance. */
     @IgniteInstanceResource
     protected IgniteEx ignite;
@@ -57,7 +57,8 @@ public abstract class VisorMultiNodeTask<A, R, J> implements ComputeTask<VisorTa
     protected abstract VisorJob<A, J> job(A arg);
 
     /** {@inheritDoc} */
-    @Override public Map<? extends ComputeJob, ClusterNode> map(List<ClusterNode> subgrid, VisorTaskArgument<A> arg) {
+    @Override public Map<? extends ComputeJob, ClusterNode> map(List<ClusterNode> subgrid, VisorTaskArgument<A> arg)
+        throws IgniteException {
         assert arg != null;
 
         start = U.currentTimeMillis();
@@ -80,7 +81,8 @@ public abstract class VisorMultiNodeTask<A, R, J> implements ComputeTask<VisorTa
      * @return Map of grid jobs assigned to subgrid node.
      * @throws IgniteException If mapping could not complete successfully.
      */
-    protected Map<? extends ComputeJob, ClusterNode> map0(List<ClusterNode> subgrid, VisorTaskArgument<A> arg) {
+    protected Map<? extends ComputeJob, ClusterNode> map0(List<ClusterNode> subgrid, VisorTaskArgument<A> arg)
+        throws IgniteException {
         Collection<UUID> nodeIds = arg.nodes();
 
         Map<ComputeJob, ClusterNode> map = U.newHashMap(nodeIds.size());
@@ -99,7 +101,8 @@ public abstract class VisorMultiNodeTask<A, R, J> implements ComputeTask<VisorTa
     }
 
     /** {@inheritDoc} */
-    @Override public ComputeJobResultPolicy result(ComputeJobResult res, List<ComputeJobResult> rcvd) {
+    @Override public ComputeJobResultPolicy result(ComputeJobResult res, List<ComputeJobResult> rcvd)
+        throws IgniteException {
         // All Visor tasks should handle exceptions in reduce method.
         return ComputeJobResultPolicy.WAIT;
     }
@@ -114,8 +117,10 @@ public abstract class VisorMultiNodeTask<A, R, J> implements ComputeTask<VisorTa
     @Nullable protected abstract R reduce0(List<ComputeJobResult> results) throws IgniteException;
 
     /** {@inheritDoc} */
-    @Nullable @Override public final R reduce(List<ComputeJobResult> results) {
+    @Nullable @Override public final VisorTaskResult<R> reduce(List<ComputeJobResult> results) throws IgniteException {
         try {
+            VisorTaskResult<R> taskRes = new VisorTaskResult<>();
+
             return reduce0(results);
         }
         finally {
